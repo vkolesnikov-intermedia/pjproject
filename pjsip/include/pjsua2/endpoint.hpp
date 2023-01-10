@@ -727,6 +727,17 @@ struct UaConfig : public PersistentObject
      */
     string              upnpIfName;
 
+    /**
+     * Specify whether to ignore unexpected incoming INVITE messages.
+     * Incoming INVITE is unexpected when it received when library is not 
+     * ready to handle it. We know only two cases: 
+     * 1. Receiving INVITE while doing shutdown
+     * 2. Receiving INVITE while there is no registered account
+     * 
+     * Default: FALSE
+     */
+    bool                ignoreUnexpectedInvites;
+
 public:
     /**
      * Default constructor to initialize with default values.
