@@ -1490,9 +1490,17 @@ pj_bool_t pjsua_call_on_incoming(pjsip_rx_data *rdata)
 
     /* Don't want to accept the call if shutdown is in progress */
     if (pjsua_var.thread_quit_flag) {
-        pjsip_endpt_respond_stateless(pjsua_var.endpt, rdata,
-                                      PJSIP_SC_TEMPORARILY_UNAVAILABLE, NULL,
-                                      NULL, NULL);
+        if (!pjsua_var.ua_cfg.ignore_unexpected_invites) {
+            pjsip_endpt_respond_stateless(pjsua_var.endpt, rdata,
+                                          PJSIP_SC_TEMPORARILY_UNAVAILABLE, NULL,
+                                          NULL, NULL);
+            PJ_LOG(2,(THIS_FILE,
+                      "Unable to accept incoming call (shutdown is in progress)"));
+        } else {
+            PJ_LOG(2,(THIS_FILE,
+                      "Unable to accept incoming call (shutdown is in progress). Ignore such INVITE."));
+        }
+        
         return PJ_TRUE;
     }
 
@@ -1626,12 +1634,16 @@ pj_bool_t pjsua_call_on_incoming(pjsip_rx_data *rdata)
     } else {
         acc_id = call->acc_id = pjsua_acc_find_for_incoming(rdata);
         if (acc_id == PJSUA_INVALID_ID) {
-            pjsip_endpt_respond_stateless(pjsua_var.endpt, rdata,
-                                          PJSIP_SC_TEMPORARILY_UNAVAILABLE,
-                                          NULL, NULL, NULL);
-
-            PJ_LOG(2,(THIS_FILE,
-                      "Unable to accept incoming call (no available account)"));
+            if (!pjsua_var.ua_cfg.ignore_unexpected_invites) {
+                pjsip_endpt_respond_stateless(pjsua_var.endpt, rdata,
+                                              PJSIP_SC_TEMPORARILY_UNAVAILABLE,
+                                              NULL, NULL, NULL);
+                PJ_LOG(2,(THIS_FILE,
+                          "Unable to accept incoming call (no available account)"));
+            } else {
+                PJ_LOG(2,(THIS_FILE,
+                          "Unable to accept incoming call (no available account). Ignore such INVITE."));
+            }
 
             goto on_return;
         }

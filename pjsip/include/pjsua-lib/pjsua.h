@@ -2327,6 +2327,17 @@ typedef struct pjsua_config
      */
     pj_str_t         upnp_if_name;
 
+    /**
+     * Specify whether to ignore unexpected incoming INVITE messages.
+     * Incoming INVITE is unexpected when it received when library is not 
+     * ready to handle it. We know only two cases: 
+     * 1. Receiving INVITE while doing shutdown
+     * 2. Receiving INVITE while there is no registered account
+     * 
+     * Default: PJ_FALSE
+     */
+    pj_bool_t        ignore_unexpected_invites;
+
 } pjsua_config;
 
 
