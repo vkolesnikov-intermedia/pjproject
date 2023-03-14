@@ -3356,6 +3356,124 @@ PJ_DEF(pj_status_t) pjsua_acc_create_request(pjsua_acc_id acc_id,
 }
 
 /*
+ * Create arbitrary INFO requests for this account. 
+ */
+PJ_DEF(pj_status_t) pjsua_acc_create_info_request(pjsua_acc_id acc_id,
+                                                   const pj_str_t *target,
+                                                   const pjsua_msg_data *msg_data,
+                                                   pjsip_tx_data **p_tdata) {
+    pjsip_tx_data *tdata;
+    pjsua_acc *acc;
+    pjsip_route_hdr *r;
+    pj_status_t status;
+    pjsip_method method = { PJSIP_OTHER_METHOD, {"INFO", 4}};
+    pjsip_auth_clt_sess *sess;
+
+    PJ_ASSERT_RETURN(target && p_tdata, PJ_EINVAL);
+    PJ_ASSERT_RETURN(pjsua_acc_is_valid(acc_id), PJ_EINVAL);
+
+    acc = &pjsua_var.acc[acc_id];
+
+    status = pjsip_endpt_create_request(pjsua_var.endpt, &method, target, 
+                                        &acc->cfg.id, target,
+                                        NULL, NULL, -1, NULL, &tdata);
+    if (status != PJ_SUCCESS) {
+        pjsua_perror(THIS_FILE, "Unable to create request", status);
+        return status;
+    }
+
+    if (acc->regc) {
+        PJ_LOG(4, (THIS_FILE, "pjsua_acc_create_info_request have found regc"));
+        status = pjsip_regc_get_auth_session(acc->regc, &sess);
+        if (status != PJ_SUCCESS)
+            return status;
+        /* Copy cached auth headers if possible */
+        status = pjsip_auth_clt_init_req(sess, tdata);
+        if (status != PJ_SUCCESS)
+            return status;
+    }
+
+    /* Copy routeset */
+    r = acc->route_set.next;
+    while (r != &acc->route_set) {
+        pjsip_msg_add_hdr(tdata->msg, 
+                          (pjsip_hdr*)pjsip_hdr_clone(tdata->pool, r));
+        r = r->next;
+    }
+
+    /* If account is locked to specific transport, then set that transport to
+     * the transmit data.
+     */
+    if (pjsua_var.acc[acc_id].cfg.transport_id != PJSUA_INVALID_ID) {
+        pjsip_tpselector tp_sel;
+
+        pjsua_init_tpselector(acc->cfg.transport_id, &tp_sel);
+        pjsip_tx_data_set_transport(tdata, &tp_sel);
+    }
+
+    /* If via_addr is set, use this address for the Via header. */
+    if (pjsua_var.acc[acc_id].cfg.allow_via_rewrite &&
+        pjsua_var.acc[acc_id].via_addr.host.slen > 0)
+    {
+        tdata->via_addr = pjsua_var.acc[acc_id].via_addr;
+        tdata->via_tp = pjsua_var.acc[acc_id].via_tp;
+    } else if (!pjsua_sip_acc_is_using_stun(acc_id) &&
+               !pjsua_sip_acc_is_using_upnp(acc_id))
+    {
+        /* Choose local interface to use in Via if acc is not using
+         * STUN nor UPnP.
+         */
+        pjsua_acc_get_uac_addr(acc_id, tdata->pool,
+                               target,
+                               &tdata->via_addr,
+                               NULL, NULL,
+                               &tdata->via_tp);
+    }
+
+    /* Copy custom headers and body if needed */
+    pjsua_process_msg_data(tdata, msg_data);
+
+    /* Done */
+    *p_tdata = tdata;
+    return PJ_SUCCESS;
+}
+
+PJ_DEF(pj_status_t) pjsua_acc_recreate_info_request(pjsua_acc_id acc_id,
+                                                    pjsip_tx_data *from_tdata,
+                                                    const pjsip_rx_data *rdata,
+                                                    pjsip_tx_data **p_tdata) 
+{
+    pjsua_acc *acc;
+    pj_status_t status;
+    pjsip_auth_clt_sess *sess;
+    pj_pool_t *pool;
+
+    PJ_ASSERT_RETURN(from_tdata && rdata && p_tdata, PJ_EINVAL);
+    PJ_ASSERT_RETURN(pjsua_acc_is_valid(acc_id), PJ_EINVAL);
+
+    acc = &pjsua_var.acc[acc_id];
+
+    pool = pjsip_endpt_create_pool( pjsua_var.endpt, "tdta%p",
+                                    PJSIP_POOL_LEN_TDATA,
+                                    PJSIP_POOL_INC_TDATA );
+
+    if (acc->regc) {
+        PJ_LOG(5, (THIS_FILE, "pjsua_acc_create_info_request have found regc"));
+        status = pjsip_regc_get_auth_session(acc->regc, &sess);
+        PJ_LOG(5, (THIS_FILE, "pjsua_acc_create_info_request get auth session %d", status));
+        if (status != PJ_SUCCESS)
+            return status;
+    }
+
+    status = pjsip_auth_clt_reinit_req(sess, rdata, from_tdata, p_tdata);
+    if (status != PJ_SUCCESS) {
+        pjsua_perror(THIS_FILE, "Unable to recreate request with auth header", status);
+        return status;
+    }
+    return PJ_SUCCESS;
+}
+
+/*
  * Internal:
  *  determine if an address is a valid IP address, and if it is,
  *  return the IP version (4 or 6).

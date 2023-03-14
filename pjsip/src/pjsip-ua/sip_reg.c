@@ -113,6 +113,13 @@ struct pjsip_regc
 };
 
 
+PJ_DEF(pj_status_t) pjsip_regc_get_auth_session(pjsip_regc *regc, pjsip_auth_clt_sess **p_sess) {
+    PJ_ASSERT_RETURN(regc && p_sess, PJ_EINVAL);
+    *p_sess = &regc->auth_sess;
+    return PJ_SUCCESS;
+}
+
+
 PJ_DEF(pj_status_t) pjsip_regc_create( pjsip_endpoint *endpt, void *token,
                                        pjsip_regc_cb *cb,
                                        pjsip_regc **p_regc)
