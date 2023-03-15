@@ -1706,6 +1706,32 @@ struct PresNotifyParam
     SipTxOption         txOption;
 };
 
+/**
+ * This structure contains parameters for Account::sendOutOfDialogInfo
+ */
+struct AccountSendOutOfDialogInfoParam
+{   
+    /**
+     * Message body and/or list of headers etc to be included in
+     * outgoing request.
+     */
+    SipTxOption  txOption;
+    
+public:
+    /**
+     * Default constructor initializes with zero/empty values.
+     */
+    AccountSendOutOfDialogInfoParam();
+
+    /**
+     * Notify application on incoming instant message or pager (i.e. MESSAGE
+     * request) that was received outside call context.
+     *
+     * @param prm           Callback parameter.
+     */
+    virtual void onResponse(SipEvent &prm);
+};
+
 
 /**
  * Wrapper class for Buddy matching algo.
@@ -1936,6 +1962,14 @@ public:
      * @return                  The pointer to buddy.
      */
     Buddy findBuddy2(string uri) const PJSUA2_THROW(Error);
+
+    /**
+     * Send out of dialog INFO with custom payload 
+     *
+     * @param options            Additional data to be sent with the message, if any.
+     *
+     */
+    void sendOutOfDialogInfo(const AccountSendOutOfDialogInfoParam &prm) PJSUA2_THROW(Error);
 
 public:
     /*

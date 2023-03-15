@@ -1181,3 +1181,23 @@ void Account::removeBuddy(Buddy *buddy)
     PJ_UNUSED_ARG(buddy);
 #endif
 }
+
+void Account::sendOutOfDialogInfo(const AccountSendOutOfDialogInfoParam &prm) PJSUA2_THROW(Error)
+{
+    pjsua_msg_data msg_data;
+    pjsip_tx_data *request;
+
+    prm.txOption.toPj(msg_data);
+
+    PJSUA2_CHECK_EXPR( pjsua_acc_create_info_request(id, 
+                                                     &msg_data.target_uri,
+                                                     &msg_data,
+                                                     &request) );
+    PJSUA2_CHECK_EXPR( pjsip_endpt_send_request(pjsua_get_pjsip_endpt(),
+                                                request,
+                                                -1,
+                                                NULL,
+                                                NULL) );
+    
+
+}
