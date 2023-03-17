@@ -1182,6 +1182,44 @@ void Account::removeBuddy(Buddy *buddy)
 #endif
 }
 
+void Account::processSecondOutOfDialogInfo(void** token, pjsip_event e) 
+{
+    SipEvent event = SipEvent()
+    event.fromPj(&e);
+
+    int statusCode = event.body.tsxState.tsx.statusCode;
+    //call callback with status code
+    PJ_LOG(4, (THIS_FILE, "second info request status = %d", statusCode));
+}
+
+void Account::processFirstOutOfDialogInfo(void** token, pjsip_event e) 
+{
+    SipEvent event = SipEvent()
+    event.fromPj(&e);
+
+    int statusCode = event.body.tsxState.tsx.statusCode;
+
+    if (statusCode == 401) {
+        //form auth header and resend request
+        pjsip_tx_data *request = *token;
+        pjsip_rx_data *response = (pjsip_rx_data *)event.body.tsxState.src.rdata.pjRxData;
+        pjsip_tx_data *newRequest;
+
+        PJSUA2_CHECK_EXPR( pjsua_acc_recreate_info_request(id,
+                                                           request,
+                                                           response,
+                                                           &newRequest) );
+        PJSUA2_CHECK_EXPR( pjsip_endpt_send_request(pjsua_get_pjsip_endpt(),
+                                                    newRequest,
+                                                    -1,
+                                                    (void**)&request,
+                                                    processSecondOutOfDialogInfo) );
+    } else {
+        //call callback with status code
+        PJ_LOG(4, (THIS_FILE, "first info request status = %d", statusCode));
+    }
+}
+
 void Account::sendOutOfDialogInfo(const AccountSendOutOfDialogInfoParam &prm) PJSUA2_THROW(Error)
 {
     pjsua_msg_data msg_data;
@@ -1196,8 +1234,6 @@ void Account::sendOutOfDialogInfo(const AccountSendOutOfDialogInfoParam &prm) PJ
     PJSUA2_CHECK_EXPR( pjsip_endpt_send_request(pjsua_get_pjsip_endpt(),
                                                 request,
                                                 -1,
-                                                NULL,
-                                                NULL) );
-    
-
+                                                (void**)&request,
+                                                processFirstOutOfDialogInfo) );
 }
