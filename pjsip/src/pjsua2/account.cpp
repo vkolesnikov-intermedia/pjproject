@@ -1182,41 +1182,57 @@ void Account::removeBuddy(Buddy *buddy)
 #endif
 }
 
-void Account::processSecondOutOfDialogInfo(void** token, pjsip_event e) 
+struct OutOfDialogInfoRequestContext 
 {
-    SipEvent event = SipEvent()
-    event.fromPj(&e);
+    Account *account;
+    pjsip_tx_data *request;
+    string token;
+};
+
+static void processSecondOutOfDialogInfo(void *token, pjsip_event *e) 
+{
+    OutOfDialogInfoRequestContext *context = (OutOfDialogInfoRequestContext*) token;
+    SipEvent event;
+    event.fromPj(*e);
 
     int statusCode = event.body.tsxState.tsx.statusCode;
+    
     //call callback with status code
     PJ_LOG(4, (THIS_FILE, "second info request status = %d", statusCode));
+    context->account->onOutOfDialogInfoResponse(context->token, event);
+    delete context;
 }
 
-void Account::processFirstOutOfDialogInfo(void** token, pjsip_event e) 
+static void processFirstOutOfDialogInfo(void *token, pjsip_event *e) 
 {
-    SipEvent event = SipEvent()
-    event.fromPj(&e);
+    OutOfDialogInfoRequestContext *context = (OutOfDialogInfoRequestContext*) token;
+    SipEvent event;
+    event.fromPj(*e);
 
     int statusCode = event.body.tsxState.tsx.statusCode;
 
     if (statusCode == 401) {
         //form auth header and resend request
-        pjsip_tx_data *request = *token;
-        pjsip_rx_data *response = (pjsip_rx_data *)event.body.tsxState.src.rdata.pjRxData;
+        pjsua_acc_id acc_id = context->account->getId();
+        pjsip_tx_data *request = context->request;
+        pjsip_rx_data *response = (pjsip_rx_data*) event.body.tsxState.src.rdata.pjRxData;
         pjsip_tx_data *newRequest;
 
-        PJSUA2_CHECK_EXPR( pjsua_acc_recreate_info_request(id,
+        PJSUA2_CHECK_EXPR( pjsua_acc_recreate_info_request(acc_id,
                                                            request,
                                                            response,
                                                            &newRequest) );
+
         PJSUA2_CHECK_EXPR( pjsip_endpt_send_request(pjsua_get_pjsip_endpt(),
                                                     newRequest,
                                                     -1,
-                                                    (void**)&request,
-                                                    processSecondOutOfDialogInfo) );
+                                                    context,
+                                                    &processSecondOutOfDialogInfo) );
     } else {
         //call callback with status code
         PJ_LOG(4, (THIS_FILE, "first info request status = %d", statusCode));
+        context->account->onOutOfDialogInfoResponse(context->token, event);
+        delete context;
     }
 }
 
@@ -1231,9 +1247,15 @@ void Account::sendOutOfDialogInfo(const AccountSendOutOfDialogInfoParam &prm) PJ
                                                      &msg_data.target_uri,
                                                      &msg_data,
                                                      &request) );
+
+    OutOfDialogInfoRequestContext *context = new OutOfDialogInfoRequestContext();
+    context->account = this;
+    context->request = request;
+    context->token = prm.token;
+    
     PJSUA2_CHECK_EXPR( pjsip_endpt_send_request(pjsua_get_pjsip_endpt(),
                                                 request,
                                                 -1,
-                                                (void**)&request,
-                                                processFirstOutOfDialogInfo) );
+                                                context,
+                                                &processFirstOutOfDialogInfo) );
 }

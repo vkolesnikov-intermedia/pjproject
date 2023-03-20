@@ -1717,19 +1717,10 @@ struct AccountSendOutOfDialogInfoParam
      */
     SipTxOption  txOption;
     
-public:
     /**
-     * Default constructor initializes with zero/empty values.
+     * Request identity token.
      */
-    AccountSendOutOfDialogInfoParam();
-
-    /**
-     * Notify application on incoming instant message or pager (i.e. MESSAGE
-     * request) that was received outside call context.
-     *
-     * @param prm           Callback parameter.
-     */
-    virtual void onResponse(SipEvent &prm);
+    string token;
 };
 
 
@@ -2075,6 +2066,18 @@ public:
      */
     virtual void onMwiInfo(OnMwiInfoParam &prm)
     { PJ_UNUSED_ARG(prm); }
+
+    /**
+     * Notification about response on out of dialog INFO request.
+     * 
+     * @param token          Request identity token
+     * @param event          Response event
+     */
+    virtual void onOutOfDialogInfoResponse(string token, SipEvent &event)
+    {
+        PJ_UNUSED_ARG(token);
+        PJ_UNUSED_ARG(event);
+    }
 
 private:
     friend class Endpoint;
