@@ -3367,7 +3367,6 @@ PJ_DEF(pj_status_t) pjsua_acc_create_info_request(pjsua_acc_id acc_id,
     pjsip_route_hdr *r;
     pj_status_t status;
     pjsip_method method = { PJSIP_OTHER_METHOD, {"INFO", 4}};
-    pjsip_auth_clt_sess *sess;
 
     PJ_ASSERT_RETURN(target && p_tdata, PJ_EINVAL);
     PJ_ASSERT_RETURN(pjsua_acc_is_valid(acc_id), PJ_EINVAL);
@@ -3380,17 +3379,6 @@ PJ_DEF(pj_status_t) pjsua_acc_create_info_request(pjsua_acc_id acc_id,
     if (status != PJ_SUCCESS) {
         pjsua_perror(THIS_FILE, "Unable to create request", status);
         return status;
-    }
-
-    if (acc->regc) {
-        PJ_LOG(4, (THIS_FILE, "pjsua_acc_create_info_request have found regc"));
-        status = pjsip_regc_get_auth_session(acc->regc, &sess);
-        if (status != PJ_SUCCESS)
-            return status;
-        /* Copy cached auth headers if possible */
-        status = pjsip_auth_clt_init_req(sess, tdata);
-        if (status != PJ_SUCCESS)
-            return status;
     }
 
     /* Copy routeset */
@@ -3443,33 +3431,41 @@ PJ_DEF(pj_status_t) pjsua_acc_recreate_info_request(pjsua_acc_id acc_id,
                                                     const pjsip_rx_data *rdata,
                                                     pjsip_tx_data **p_tdata) 
 {
-    pjsua_acc *acc;
     pj_status_t status;
-    pjsip_auth_clt_sess *sess;
+    pjsua_acc *acc;
+    pjsua_acc_config *acc_cfg;
+    pjsip_auth_clt_sess authSess;
     pj_pool_t *pool;
 
     PJ_ASSERT_RETURN(from_tdata && rdata && p_tdata, PJ_EINVAL);
     PJ_ASSERT_RETURN(pjsua_acc_is_valid(acc_id), PJ_EINVAL);
 
     acc = &pjsua_var.acc[acc_id];
+    acc_cfg = &pjsua_var.acc[acc_id].cfg;
 
-    pool = pjsip_endpt_create_pool( pjsua_var.endpt, "tdta%p",
-                                    PJSIP_POOL_LEN_TDATA,
-                                    PJSIP_POOL_INC_TDATA );
+    pool = pjsip_endpt_create_pool( pjsua_var.endpt, "auth%p",
+                                    2000,
+                                    2000 );
 
-    if (acc->regc) {
-        PJ_LOG(5, (THIS_FILE, "pjsua_acc_create_info_request have found regc"));
-        status = pjsip_regc_get_auth_session(acc->regc, &sess);
-        PJ_LOG(5, (THIS_FILE, "pjsua_acc_create_info_request get auth session %d", status));
-        if (status != PJ_SUCCESS)
-            return status;
+    status = pjsip_auth_clt_init(&authSess, pjsua_var.endpt, pool, 0);
+    if (status != PJ_SUCCESS) {
+        pjsua_perror(THIS_FILE, "Unable to create auth session", status);
+        return status;
+    }
+    
+    if (acc->cred_cnt > 0) {
+        status = pjsip_auth_clt_set_credentials(&authSess, 1, &acc_cfg->cred_info[0]);
+    } else {
+        pjsua_perror(THIS_FILE, "Unsufficient credentials", -1);
+        return status;
     }
 
-    status = pjsip_auth_clt_reinit_req(sess, rdata, from_tdata, p_tdata);
+    status = pjsip_auth_clt_reinit_req(&authSess, rdata, from_tdata, p_tdata);
     if (status != PJ_SUCCESS) {
         pjsua_perror(THIS_FILE, "Unable to recreate request with auth header", status);
         return status;
     }
+    pjsip_auth_clt_deinit(&authSess);
     return PJ_SUCCESS;
 }
 

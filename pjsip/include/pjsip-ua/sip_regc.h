@@ -127,16 +127,6 @@ typedef struct pjsip_regc_info pjsip_regc_info;
 
 
 /**
- * Get auth session
- *
- * @param regc      The client registration structure.
- *
- * @return          PJ_SUCCESS on success.
- */
-PJ_DECL(pj_status_t) pjsip_regc_get_auth_session(pjsip_regc *regc, pjsip_auth_clt_sess **p_sess);
-
-
-/**
  * Get the module instance for client registration module.
  *
  * @return          client registration module.
