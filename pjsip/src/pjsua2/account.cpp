@@ -1182,7 +1182,7 @@ void Account::removeBuddy(Buddy *buddy)
 #endif
 }
 
-struct OutOfDialogMessageRequestContext 
+struct OutOfDialogRequestContext 
 {
     Account *account;
     pjsip_tx_data *request;
@@ -1193,13 +1193,13 @@ public:
     /**
      * Default constructor
      */
-    OutOfDialogInfoRequestContext() : timeout(-1)
+    OutOfDialogRequestContext() : timeout(-1)
     {}
 };
 
 static void processSecondOutOfDialogMessage(void *token, pjsip_event *e) 
 {
-    OutOfDialogMessageRequestContext *context = (OutOfDialogMessageRequestContext*) token;
+    OutOfDialogRequestContext *context = (OutOfDialogRequestContext*) token;
     SipEvent event;
     event.fromPj(*e);
 
@@ -1207,13 +1207,13 @@ static void processSecondOutOfDialogMessage(void *token, pjsip_event *e)
     
     //call callback with status code
     PJ_LOG(4, (THIS_FILE, "recreated custom message request status = %d", statusCode));
-    context->account->onOutOfDialogMessageResponse(context->token, event);
+    context->account->onOutOfDialogResponse(context->token, event);
     delete context;
 }
 
 static void processFirstOutOfDialogMessage(void *token, pjsip_event *e) 
 {
-    OutOfDialogMessageRequestContext *context = (OutOfDialogMessageRequestContext*) token;
+    OutOfDialogRequestContext *context = (OutOfDialogRequestContext*) token;
     SipEvent event;
     event.fromPj(*e);
 
@@ -1246,12 +1246,12 @@ static void processFirstOutOfDialogMessage(void *token, pjsip_event *e)
     } else {
         //call callback with status code
         PJ_LOG(4, (THIS_FILE, "custom message request status = %d", statusCode));
-        context->account->onOutOfDialogMessageResponse(context->token, event);
+        context->account->onOutOfDialogResponse(context->token, event);
         delete context;
     }
 }
 
-void Account::sendOutOfDialogMessage(const AccountSendOutOfDialogMessageParam &prm) PJSUA2_THROW(Error)
+void Account::sendOutOfDialogRequest(const AccountSendOutOfDialogRequestParam &prm) PJSUA2_THROW(Error)
 {
     pjsua_msg_data msg_data;
     pjsip_tx_data *request;
@@ -1265,7 +1265,7 @@ void Account::sendOutOfDialogMessage(const AccountSendOutOfDialogMessageParam &p
                                                     &msg_data,
                                                     &request) );
 
-    OutOfDialogMessageRequestContext *context = new OutOfDialogMessageRequestContext();
+    OutOfDialogRequestContext *context = new OutOfDialogRequestContext();
     context->account = this;
     context->request = request;
     context->token = prm.token;

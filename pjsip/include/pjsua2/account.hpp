@@ -1707,20 +1707,20 @@ struct PresNotifyParam
 };
 
 /**
- * This structure contains parameters for Account::sendOutOfDialogMessage
+ * This structure contains parameters for Account::sendOutOfDialogRequest
  */
-struct AccountSendOutOfDialogMessageParam
+struct AccountSendOutOfDialogRequestParam
 {   
     /**
      * Message body and/or list of headers etc to be included in
      * outgoing request.
      */
-    SipTxOption  txOption;
+    SipTxOption txOption;
 
     /**
      * Request method. Allowed INFO, OPTIONS.
      */
-    string           method;
+    string method;
     
     /**
      * Request identity token.
@@ -1960,12 +1960,12 @@ public:
     Buddy findBuddy2(string uri) const PJSUA2_THROW(Error);
 
     /**
-     * Send out of dialog custom with custom payload 
+     * Send out of dialog request with custom payload 
      *
      * @param options            Additional data to be sent with the message, if any.
      *
      */
-    void sendOutOfDialogMessage(const AccountSendOutOfDialogMessageParam &prm) PJSUA2_THROW(Error);
+    void sendOutOfDialogRequest(const AccountSendOutOfDialogRequestParam &prm) PJSUA2_THROW(Error);
 
 public:
     /*
@@ -2073,12 +2073,12 @@ public:
     { PJ_UNUSED_ARG(prm); }
 
     /**
-     * Notification about response on out of dialog custom message request.
+     * Notification about response on out of dialog request.
      * 
      * @param token          Request identity token
      * @param event          Response event
      */
-    virtual void onOutOfDialogMessageResponse(string token, SipEvent &event)
+    virtual void onOutOfDialogResponse(string token, SipEvent &event)
     {
         PJ_UNUSED_ARG(token);
         PJ_UNUSED_ARG(event);
