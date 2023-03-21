@@ -1182,7 +1182,7 @@ void Account::removeBuddy(Buddy *buddy)
 #endif
 }
 
-struct OutOfDialogInfoRequestContext 
+struct OutOfDialogMessageRequestContext 
 {
     Account *account;
     pjsip_tx_data *request;
@@ -1197,23 +1197,23 @@ public:
     {}
 };
 
-static void processSecondOutOfDialogInfo(void *token, pjsip_event *e) 
+static void processSecondOutOfDialogMessage(void *token, pjsip_event *e) 
 {
-    OutOfDialogInfoRequestContext *context = (OutOfDialogInfoRequestContext*) token;
+    OutOfDialogMessageRequestContext *context = (OutOfDialogMessageRequestContext*) token;
     SipEvent event;
     event.fromPj(*e);
 
     int statusCode = event.body.tsxState.tsx.statusCode;
     
     //call callback with status code
-    PJ_LOG(4, (THIS_FILE, "second info request status = %d", statusCode));
-    context->account->onOutOfDialogInfoResponse(context->token, event);
+    PJ_LOG(4, (THIS_FILE, "recreated custom message request status = %d", statusCode));
+    context->account->onOutOfDialogMessageResponse(context->token, event);
     delete context;
 }
 
-static void processFirstOutOfDialogInfo(void *token, pjsip_event *e) 
+static void processFirstOutOfDialogMessage(void *token, pjsip_event *e) 
 {
-    OutOfDialogInfoRequestContext *context = (OutOfDialogInfoRequestContext*) token;
+    OutOfDialogMessageRequestContext *context = (OutOfDialogMessageRequestContext*) token;
     SipEvent event;
     event.fromPj(*e);
 
@@ -1226,10 +1226,10 @@ static void processFirstOutOfDialogInfo(void *token, pjsip_event *e)
         pjsip_rx_data *response = (pjsip_rx_data*) event.body.tsxState.src.rdata.pjRxData;
         pjsip_tx_data *newRequest;
 
-        pj_status_t status = pjsua_acc_recreate_info_request(acc_id,
-                                                             request,
-                                                             response,
-                                                             &newRequest);
+        pj_status_t status = pjsua_acc_recreate_ood_request(acc_id,
+                                                            request,
+                                                            response,
+                                                            &newRequest);
         if (status != PJ_SUCCESS) {
             delete context;
             PJSUA2_RAISE_ERROR(status);
@@ -1238,32 +1238,34 @@ static void processFirstOutOfDialogInfo(void *token, pjsip_event *e)
                                           newRequest,
                                           context->timeout,
                                           context,
-                                          &processSecondOutOfDialogInfo);
+                                          &processSecondOutOfDialogMessage);
         if (status != PJ_SUCCESS) {
             delete context;
             PJSUA2_RAISE_ERROR(status);
         }
     } else {
         //call callback with status code
-        PJ_LOG(4, (THIS_FILE, "first info request status = %d", statusCode));
-        context->account->onOutOfDialogInfoResponse(context->token, event);
+        PJ_LOG(4, (THIS_FILE, "custom message request status = %d", statusCode));
+        context->account->onOutOfDialogMessageResponse(context->token, event);
         delete context;
     }
 }
 
-void Account::sendOutOfDialogInfo(const AccountSendOutOfDialogInfoParam &prm) PJSUA2_THROW(Error)
+void Account::sendOutOfDialogMessage(const AccountSendOutOfDialogMessageParam &prm) PJSUA2_THROW(Error)
 {
     pjsua_msg_data msg_data;
     pjsip_tx_data *request;
+    pj_str_t method_name = str2Pj(prm.method);
 
     prm.txOption.toPj(msg_data);
 
-    PJSUA2_CHECK_EXPR( pjsua_acc_create_info_request(id, 
-                                                     &msg_data.target_uri,
-                                                     &msg_data,
-                                                     &request) );
+    PJSUA2_CHECK_EXPR( pjsua_acc_create_ood_request(id, 
+                                                    method_name,
+                                                    &msg_data.target_uri,
+                                                    &msg_data,
+                                                    &request) );
 
-    OutOfDialogInfoRequestContext *context = new OutOfDialogInfoRequestContext();
+    OutOfDialogMessageRequestContext *context = new OutOfDialogMessageRequestContext();
     context->account = this;
     context->request = request;
     context->token = prm.token;
@@ -1272,7 +1274,7 @@ void Account::sendOutOfDialogInfo(const AccountSendOutOfDialogInfoParam &prm) PJ
                                                   request,
                                                   context->timeout,
                                                   context,
-                                                  &processFirstOutOfDialogInfo);
+                                                  &processFirstOutOfDialogMessage);
     if (status != PJ_SUCCESS) {
         delete context;
         PJSUA2_RAISE_ERROR(status);

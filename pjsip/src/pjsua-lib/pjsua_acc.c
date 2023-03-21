@@ -3356,20 +3356,23 @@ PJ_DEF(pj_status_t) pjsua_acc_create_request(pjsua_acc_id acc_id,
 }
 
 /*
- * Create arbitrary INFO requests for this account. 
+ * Create arbitrary auxilary out of dialog requests for this account. 
  */
-PJ_DEF(pj_status_t) pjsua_acc_create_info_request(pjsua_acc_id acc_id,
-                                                   const pj_str_t *target,
-                                                   const pjsua_msg_data *msg_data,
-                                                   pjsip_tx_data **p_tdata) {
+PJ_DEF(pj_status_t) pjsua_acc_create_ood_request(pjsua_acc_id acc_id,
+                                                 pj_str_t method_name,
+                                                 const pj_str_t *target,
+                                                 const pjsua_msg_data *msg_data,
+                                                 pjsip_tx_data **p_tdata) {
     pjsip_tx_data *tdata;
     pjsua_acc *acc;
     pjsip_route_hdr *r;
     pj_status_t status;
-    pjsip_method method = { PJSIP_OTHER_METHOD, {"INFO", 4}};
+    pjsip_method method;
 
     PJ_ASSERT_RETURN(target && p_tdata, PJ_EINVAL);
     PJ_ASSERT_RETURN(pjsua_acc_is_valid(acc_id), PJ_EINVAL);
+
+    pjsip_method_init_np(&method, &method_name);
 
     acc = &pjsua_var.acc[acc_id];
 
@@ -3426,10 +3429,14 @@ PJ_DEF(pj_status_t) pjsua_acc_create_info_request(pjsua_acc_id acc_id,
     return PJ_SUCCESS;
 }
 
-PJ_DEF(pj_status_t) pjsua_acc_recreate_info_request(pjsua_acc_id acc_id,
-                                                    pjsip_tx_data *from_tdata,
-                                                    const pjsip_rx_data *rdata,
-                                                    pjsip_tx_data **p_tdata) 
+/*
+ * Create arbitrary auxilary out of dialog requests for this account
+ * based on response to previous request
+ */
+PJ_DEF(pj_status_t) pjsua_acc_recreate_ood_request(pjsua_acc_id acc_id,
+                                                   pjsip_tx_data *from_tdata,
+                                                   const pjsip_rx_data *rdata,
+                                                   pjsip_tx_data **p_tdata) 
 {
     pj_status_t status;
     pjsua_acc *acc;
@@ -3443,6 +3450,7 @@ PJ_DEF(pj_status_t) pjsua_acc_recreate_info_request(pjsua_acc_id acc_id,
     acc = &pjsua_var.acc[acc_id];
     acc_cfg = &pjsua_var.acc[acc_id].cfg;
 
+    //experimentally got those numbers, potentially could be lower, but be aware of pool-resize crashes
     pool = pjsip_endpt_create_pool( pjsua_var.endpt, "auth%p",
                                     2000,
                                     2000 );
