@@ -3363,70 +3363,13 @@ PJ_DEF(pj_status_t) pjsua_acc_create_ood_request(pjsua_acc_id acc_id,
                                                  const pj_str_t *target,
                                                  const pjsua_msg_data *msg_data,
                                                  pjsip_tx_data **p_tdata) {
-    pjsip_tx_data *tdata;
-    pjsua_acc *acc;
-    pjsip_route_hdr *r;
-    pj_status_t status;
     pjsip_method method;
-
-    PJ_ASSERT_RETURN(target && p_tdata, PJ_EINVAL);
-    PJ_ASSERT_RETURN(pjsua_acc_is_valid(acc_id), PJ_EINVAL);
-
     pjsip_method_init_np(&method, &method_name);
-
-    acc = &pjsua_var.acc[acc_id];
-
-    status = pjsip_endpt_create_request(pjsua_var.endpt, &method, target, 
-                                        &acc->cfg.id, target,
-                                        NULL, NULL, -1, NULL, &tdata);
-    if (status != PJ_SUCCESS) {
-        pjsua_perror(THIS_FILE, "Unable to create request", status);
-        return status;
+    pj_status_t status = pjsua_acc_create_request(acc_id, &method, target, p_tdata);
+    if (status == PJ_SUCCESS) {
+        pjsua_process_msg_data(*p_tdata, msg_data);
     }
-
-    /* Copy routeset */
-    r = acc->route_set.next;
-    while (r != &acc->route_set) {
-        pjsip_msg_add_hdr(tdata->msg, 
-                          (pjsip_hdr*)pjsip_hdr_clone(tdata->pool, r));
-        r = r->next;
-    }
-
-    /* If account is locked to specific transport, then set that transport to
-     * the transmit data.
-     */
-    if (pjsua_var.acc[acc_id].cfg.transport_id != PJSUA_INVALID_ID) {
-        pjsip_tpselector tp_sel;
-
-        pjsua_init_tpselector(acc->cfg.transport_id, &tp_sel);
-        pjsip_tx_data_set_transport(tdata, &tp_sel);
-    }
-
-    /* If via_addr is set, use this address for the Via header. */
-    if (pjsua_var.acc[acc_id].cfg.allow_via_rewrite &&
-        pjsua_var.acc[acc_id].via_addr.host.slen > 0)
-    {
-        tdata->via_addr = pjsua_var.acc[acc_id].via_addr;
-        tdata->via_tp = pjsua_var.acc[acc_id].via_tp;
-    } else if (!pjsua_sip_acc_is_using_stun(acc_id) &&
-               !pjsua_sip_acc_is_using_upnp(acc_id))
-    {
-        /* Choose local interface to use in Via if acc is not using
-         * STUN nor UPnP.
-         */
-        pjsua_acc_get_uac_addr(acc_id, tdata->pool,
-                               target,
-                               &tdata->via_addr,
-                               NULL, NULL,
-                               &tdata->via_tp);
-    }
-
-    /* Copy custom headers and body if needed */
-    pjsua_process_msg_data(tdata, msg_data);
-
-    /* Done */
-    *p_tdata = tdata;
-    return PJ_SUCCESS;
+    return status;
 }
 
 /*
@@ -3450,13 +3393,13 @@ PJ_DEF(pj_status_t) pjsua_acc_recreate_ood_request(pjsua_acc_id acc_id,
     acc = &pjsua_var.acc[acc_id];
     acc_cfg = &pjsua_var.acc[acc_id].cfg;
 
-    //experimentally got those numbers, potentially could be lower, but be aware of pool-resize crashes
     pool = pjsip_endpt_create_pool( pjsua_var.endpt, "auth%p",
                                     2000,
                                     2000 );
 
     status = pjsip_auth_clt_init(&authSess, pjsua_var.endpt, pool, 0);
     if (status != PJ_SUCCESS) {
+        pjsip_endpt_release_pool(pjsua_var.endpt, pool);
         pjsua_perror(THIS_FILE, "Unable to create auth session", status);
         return status;
     }
@@ -3464,12 +3407,14 @@ PJ_DEF(pj_status_t) pjsua_acc_recreate_ood_request(pjsua_acc_id acc_id,
     if (acc->cred_cnt > 0) {
         status = pjsip_auth_clt_set_credentials(&authSess, 1, &acc_cfg->cred_info[0]);
     } else {
+        pjsip_endpt_release_pool(pjsua_var.endpt, pool);
         pjsua_perror(THIS_FILE, "Unsufficient credentials", -1);
         return status;
     }
 
     status = pjsip_auth_clt_reinit_req(&authSess, rdata, from_tdata, p_tdata);
     if (status != PJ_SUCCESS) {
+        pjsip_endpt_release_pool(pjsua_var.endpt, pool);
         pjsua_perror(THIS_FILE, "Unable to recreate request with auth header", status);
         return status;
     }
