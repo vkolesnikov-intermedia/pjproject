@@ -3396,6 +3396,10 @@ PJ_DEF(pj_status_t) pjsua_acc_recreate_ood_request(pjsua_acc_id acc_id,
     pool = pjsip_endpt_create_pool( pjsua_var.endpt, "auth%p",
                                     2000,
                                     2000 );
+    if (!pool) {
+        pjsua_perror(THIS_FILE, "Can't allocate pool for auth session", PJ_ENOMEM);
+        return PJ_ENOMEM;
+    }
 
     status = pjsip_auth_clt_init(&authSess, pjsua_var.endpt, pool, 0);
     if (status != PJ_SUCCESS) {
