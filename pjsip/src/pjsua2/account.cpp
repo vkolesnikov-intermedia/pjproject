@@ -1181,3 +1181,102 @@ void Account::removeBuddy(Buddy *buddy)
     PJ_UNUSED_ARG(buddy);
 #endif
 }
+
+struct OutOfDialogRequestContext 
+{
+    Account *account;
+    pjsip_tx_data *request;
+    string token;
+    pj_int32_t timeout;
+
+public:
+    /**
+     * Default constructor
+     */
+    OutOfDialogRequestContext() : timeout(-1)
+    {}
+};
+
+static void processSecondOutOfDialogMessage(void *token, pjsip_event *e) 
+{
+    OutOfDialogRequestContext *context = (OutOfDialogRequestContext*) token;
+    SipEvent event;
+    event.fromPj(*e);
+
+    int statusCode = event.body.tsxState.tsx.statusCode;
+    
+    //call callback with status code
+    PJ_LOG(4, (THIS_FILE, "recreated custom message request status = %d", statusCode));
+    context->account->onOutOfDialogResponse(context->token, event);
+    delete context;
+}
+
+static void processFirstOutOfDialogMessage(void *token, pjsip_event *e) 
+{
+    OutOfDialogRequestContext *context = (OutOfDialogRequestContext*) token;
+    SipEvent event;
+    event.fromPj(*e);
+
+    int statusCode = event.body.tsxState.tsx.statusCode;
+
+    if (statusCode == 401) {
+        //form auth header and resend request
+        pjsua_acc_id acc_id = context->account->getId();
+        pjsip_tx_data *request = context->request;
+        pjsip_rx_data *response = (pjsip_rx_data*) event.body.tsxState.src.rdata.pjRxData;
+        pjsip_tx_data *newRequest;
+
+        pj_status_t status = pjsua_acc_recreate_ood_request(acc_id,
+                                                            request,
+                                                            response,
+                                                            &newRequest);
+        if (status != PJ_SUCCESS) {
+            delete context;
+            PJSUA2_RAISE_ERROR(status);
+        }
+        status = pjsip_endpt_send_request(pjsua_get_pjsip_endpt(),
+                                          newRequest,
+                                          context->timeout,
+                                          context,
+                                          &processSecondOutOfDialogMessage);
+        if (status != PJ_SUCCESS) {
+            delete context;
+            PJSUA2_RAISE_ERROR(status);
+        }
+    } else {
+        //call callback with status code
+        PJ_LOG(4, (THIS_FILE, "custom message request status = %d", statusCode));
+        context->account->onOutOfDialogResponse(context->token, event);
+        delete context;
+    }
+}
+
+void Account::sendOutOfDialogRequest(const AccountSendOutOfDialogRequestParam &prm) PJSUA2_THROW(Error)
+{
+    pjsua_msg_data msg_data;
+    pjsip_tx_data *request;
+    pj_str_t method_name = str2Pj(prm.method);
+
+    prm.txOption.toPj(msg_data);
+
+    PJSUA2_CHECK_EXPR( pjsua_acc_create_ood_request(id, 
+                                                    method_name,
+                                                    &msg_data.target_uri,
+                                                    &msg_data,
+                                                    &request) );
+
+    OutOfDialogRequestContext *context = new OutOfDialogRequestContext();
+    context->account = this;
+    context->request = request;
+    context->token = prm.token;
+    
+    pj_status_t status = pjsip_endpt_send_request(pjsua_get_pjsip_endpt(),
+                                                  request,
+                                                  context->timeout,
+                                                  context,
+                                                  &processFirstOutOfDialogMessage);
+    if (status != PJ_SUCCESS) {
+        delete context;
+        PJSUA2_RAISE_ERROR(status);
+    }
+}

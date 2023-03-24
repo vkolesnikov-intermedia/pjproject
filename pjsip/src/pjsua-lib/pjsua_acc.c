@@ -3356,6 +3356,77 @@ PJ_DEF(pj_status_t) pjsua_acc_create_request(pjsua_acc_id acc_id,
 }
 
 /*
+ * Create arbitrary auxilary out of dialog requests for this account. 
+ */
+PJ_DEF(pj_status_t) pjsua_acc_create_ood_request(pjsua_acc_id acc_id,
+                                                 pj_str_t method_name,
+                                                 const pj_str_t *target,
+                                                 const pjsua_msg_data *msg_data,
+                                                 pjsip_tx_data **p_tdata) {
+    pjsip_method method;
+    pjsip_method_init_np(&method, &method_name);
+    pj_status_t status = pjsua_acc_create_request(acc_id, &method, target, p_tdata);
+    if (status == PJ_SUCCESS) {
+        pjsua_process_msg_data(*p_tdata, msg_data);
+    }
+    return status;
+}
+
+/*
+ * Create arbitrary auxilary out of dialog requests for this account
+ * based on response to previous request
+ */
+PJ_DEF(pj_status_t) pjsua_acc_recreate_ood_request(pjsua_acc_id acc_id,
+                                                   pjsip_tx_data *from_tdata,
+                                                   const pjsip_rx_data *rdata,
+                                                   pjsip_tx_data **p_tdata) 
+{
+    pj_status_t status;
+    pjsua_acc *acc;
+    pjsua_acc_config *acc_cfg;
+    pjsip_auth_clt_sess authSess;
+    pj_pool_t *pool;
+
+    PJ_ASSERT_RETURN(from_tdata && rdata && p_tdata, PJ_EINVAL);
+    PJ_ASSERT_RETURN(pjsua_acc_is_valid(acc_id), PJ_EINVAL);
+
+    acc = &pjsua_var.acc[acc_id];
+    acc_cfg = &pjsua_var.acc[acc_id].cfg;
+
+    pool = pjsip_endpt_create_pool( pjsua_var.endpt, "auth%p",
+                                    2000,
+                                    2000 );
+    if (!pool) {
+        pjsua_perror(THIS_FILE, "Can't allocate pool for auth session", PJ_ENOMEM);
+        return PJ_ENOMEM;
+    }
+
+    status = pjsip_auth_clt_init(&authSess, pjsua_var.endpt, pool, 0);
+    if (status != PJ_SUCCESS) {
+        pjsip_endpt_release_pool(pjsua_var.endpt, pool);
+        pjsua_perror(THIS_FILE, "Unable to create auth session", status);
+        return status;
+    }
+    
+    if (acc->cred_cnt > 0) {
+        status = pjsip_auth_clt_set_credentials(&authSess, 1, &acc_cfg->cred_info[0]);
+    } else {
+        pjsip_endpt_release_pool(pjsua_var.endpt, pool);
+        pjsua_perror(THIS_FILE, "Unsufficient credentials", -1);
+        return status;
+    }
+
+    status = pjsip_auth_clt_reinit_req(&authSess, rdata, from_tdata, p_tdata);
+    if (status != PJ_SUCCESS) {
+        pjsip_endpt_release_pool(pjsua_var.endpt, pool);
+        pjsua_perror(THIS_FILE, "Unable to recreate request with auth header", status);
+        return status;
+    }
+    pjsip_auth_clt_deinit(&authSess);
+    return PJ_SUCCESS;
+}
+
+/*
  * Internal:
  *  determine if an address is a valid IP address, and if it is,
  *  return the IP version (4 or 6).
