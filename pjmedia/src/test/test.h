@@ -37,11 +37,13 @@
 #define HAS_JBUF_TEST           1
 #define HAS_MIPS_TEST           WITH_BENCHMARK
 #define HAS_CODEC_VECTOR_TEST   1
+#define HAS_NACK_BUFFER_TEST    1
 
 int session_test(void);
 int rtp_test(void);
 int sdp_test(void);
 int jbuf_main(void);
+int nack_buffer_test(void);
 int sdp_neg_test(void);
 int mips_test(void);
 int codec_test_vectors(void);

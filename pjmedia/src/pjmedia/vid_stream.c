@@ -973,7 +973,7 @@ static void on_rx_rtp( pjmedia_tp_cb_param *param)
     } else {
         /* Just put the payload into jitter buffer */
         pjmedia_jbuf_put_frame3(stream->jb, payload, payloadlen, 0,
-                                pj_ntohs(hdr->seq), pj_ntohl(hdr->ts), NULL);
+                                pj_ntohs(hdr->seq), pj_ntohl(hdr->ts), NULL, 0);
 
 #if TRACE_JB
         trace_jb_put(stream, hdr, payloadlen, count);

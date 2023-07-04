@@ -178,23 +178,25 @@ typedef struct pjmedia_rtcp_ntp_rec
  */
 typedef struct pjmedia_rtcp_stream_stat
 {
-    pj_time_val     update;     /**< Time of last update.                   */
-    unsigned        update_cnt; /**< Number of updates (to calculate avg)   */
-    pj_uint32_t     pkt;        /**< Total number of packets                */
-    pj_uint32_t     bytes;      /**< Total number of payload/bytes          */
-    unsigned        discard;    /**< Total number of discarded packets.     */
-    unsigned        loss;       /**< Total number of packets lost           */
-    unsigned        reorder;    /**< Total number of out of order packets   */
-    unsigned        dup;        /**< Total number of duplicates packets     */
+    pj_time_val     update;     /**< Time of last update.                           */
+    unsigned        update_cnt; /**< Number of updates (to calculate avg)           */
+    pj_uint32_t     pkt;        /**< Total number of packets                        */
+    pj_uint32_t     bytes;      /**< Total number of payload/bytes                  */
+    unsigned        discard;    /**< Total number of discarded packets.             */
+    unsigned        loss;       /**< Total number of packets lost                   */
+    unsigned        reorder;    /**< Total number of out of order packets           */
+    unsigned        dup;        /**< Total number of duplicates packets             */
+    unsigned        nack_cnt;   /**< Total number of packets requested using NACK   */
+    unsigned        useful_nack_cnt;/**< Total number of played NACK packets*/
 
-    pj_math_stat    loss_period;/**< Loss period statistics (in usec)       */
+    pj_math_stat    loss_period;/**< Loss period statistics (in usec)               */
 
     struct {
-        unsigned    burst:1;    /**< Burst/sequential packet lost detected  */
-        unsigned    random:1;   /**< Random packet lost detected.           */
-    } loss_type;                /**< Types of loss detected.                */
+        unsigned    burst:1;    /**< Burst/sequential packet lost detected          */
+        unsigned    random:1;   /**< Random packet lost detected.                   */  
+    } loss_type;                /**< Types of loss detected.                        */
 
-    pj_math_stat    jitter;     /**< Jitter statistics (in usec)            */
+    pj_math_stat    jitter;     /**< Jitter statistics (in usec)                    */
 
 } pjmedia_rtcp_stream_stat;
 

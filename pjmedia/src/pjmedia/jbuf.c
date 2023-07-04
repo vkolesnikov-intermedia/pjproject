@@ -74,6 +74,7 @@ typedef struct jb_framelist_t
     pj_size_t       *content_len;       /**< frame length array             */
     pj_uint32_t     *bit_info;          /**< frame bit info array           */
     pj_uint32_t     *ts;                /**< timestamp array                */
+    pj_uint16_t     *packet_seq;        /**< packet sequence array          */
 
     /* States */
     unsigned         head;              /**< index of head, pointed frame
@@ -216,6 +217,12 @@ static pj_status_t jb_framelist_init( pj_pool_t *pool,
                                             sizeof(framelist->ts[0])*
                                             framelist->max_count);
 
+
+    framelist->packet_seq   = (pj_uint16_t*)
+                              pj_pool_alloc(pool,
+                                            sizeof(framelist->packet_seq[0])*
+                                            framelist->max_count);
+
     return jb_framelist_reset(framelist);
 
 }
@@ -277,7 +284,8 @@ static pj_bool_t jb_framelist_get(jb_framelist_t *framelist,
                                   pjmedia_jb_frame_type *p_type,
                                   pj_uint32_t *bit_info,
                                   pj_uint32_t *ts,
-                                  int *seq)
+                                  int *seq,
+                                  pj_uint16_t *packet_seq)
 {
     if (framelist->size) {
         pj_bool_t prev_discarded = PJ_FALSE;
@@ -328,6 +336,9 @@ static pj_bool_t jb_framelist_get(jb_framelist_t *framelist,
                 *ts = framelist->ts[framelist->head];
             if (seq)
                 *seq = framelist->origin;
+            if (packet_seq) {
+                *packet_seq = framelist->packet_seq[framelist->head];
+            }
 
             //pj_bzero(framelist->content +
             //   framelist->head * framelist->frame_size,
@@ -468,7 +479,8 @@ static pj_status_t jb_framelist_put_at(jb_framelist_t *framelist,
                                        unsigned frame_size,
                                        pj_uint32_t bit_info,
                                        pj_uint32_t ts,
-                                       unsigned frame_type)
+                                       unsigned frame_type,
+                                       pj_uint16_t packet_seq)
 {
     int distance;
     unsigned pos;
@@ -545,6 +557,7 @@ static pj_status_t jb_framelist_put_at(jb_framelist_t *framelist,
     framelist->content_len[pos] = frame_size;
     framelist->bit_info[pos] = bit_info;
     framelist->ts[pos] = ts;
+    framelist->packet_seq[pos] = packet_seq;
 
     /* update framelist size */
     if (framelist->origin + (int)framelist->size <= index)
@@ -1002,7 +1015,7 @@ PJ_DEF(void) pjmedia_jbuf_put_frame( pjmedia_jbuf *jb,
                                      pj_size_t frame_size,
                                      int frame_seq)
 {
-    pjmedia_jbuf_put_frame3(jb, frame, frame_size, 0, frame_seq, 0, NULL);
+    pjmedia_jbuf_put_frame3(jb, frame, frame_size, 0, frame_seq, 0, NULL, 0);
 }
 
 PJ_DEF(void) pjmedia_jbuf_put_frame2(pjmedia_jbuf *jb,
@@ -1010,10 +1023,11 @@ PJ_DEF(void) pjmedia_jbuf_put_frame2(pjmedia_jbuf *jb,
                                      pj_size_t frame_size,
                                      pj_uint32_t bit_info,
                                      int frame_seq,
-                                     pj_bool_t *discarded)
+                                     pj_bool_t *discarded,
+                                     pj_uint16_t packet_seq)
 {
     pjmedia_jbuf_put_frame3(jb, frame, frame_size, bit_info, frame_seq, 0,
-                            discarded);
+                            discarded, packet_seq);
 }
 
 PJ_DEF(void) pjmedia_jbuf_put_frame3(pjmedia_jbuf *jb,
@@ -1022,7 +1036,8 @@ PJ_DEF(void) pjmedia_jbuf_put_frame3(pjmedia_jbuf *jb,
                                      pj_uint32_t bit_info,
                                      int frame_seq,
                                      pj_uint32_t ts,
-                                     pj_bool_t *discarded)
+                                     pj_bool_t *discarded,
+                                     pj_uint16_t packet_seq)
 {
     pj_size_t min_frame_size;
     int new_size, cur_size;
@@ -1040,7 +1055,7 @@ PJ_DEF(void) pjmedia_jbuf_put_frame3(pjmedia_jbuf *jb,
     min_frame_size = PJ_MIN(frame_size, jb->jb_frame_size);
     status = jb_framelist_put_at(&jb->jb_framelist, frame_seq, frame,
                                  (unsigned)min_frame_size, bit_info, ts,
-                                 PJMEDIA_JB_NORMAL_FRAME);
+                                 PJMEDIA_JB_NORMAL_FRAME, packet_seq);
 
     /* Jitter buffer is full, remove some older frames */
     while (status == PJ_ETOOMANY) {
@@ -1059,7 +1074,7 @@ PJ_DEF(void) pjmedia_jbuf_put_frame3(pjmedia_jbuf *jb,
         removed = jb_framelist_remove_head(&jb->jb_framelist, distance);
         status = jb_framelist_put_at(&jb->jb_framelist, frame_seq, frame,
                                      (unsigned)min_frame_size, bit_info, ts,
-                                     PJMEDIA_JB_NORMAL_FRAME);
+                                     PJMEDIA_JB_NORMAL_FRAME, packet_seq);
 
         jb->jb_discard += removed;
     }
@@ -1092,7 +1107,7 @@ PJ_DEF(void) pjmedia_jbuf_get_frame( pjmedia_jbuf *jb,
                                      char *p_frame_type)
 {
     pjmedia_jbuf_get_frame3(jb, frame, NULL, p_frame_type, NULL,
-                            NULL, NULL);
+                            NULL, NULL, NULL);
 }
 
 /*
@@ -1102,10 +1117,11 @@ PJ_DEF(void) pjmedia_jbuf_get_frame2(pjmedia_jbuf *jb,
                                      void *frame,
                                      pj_size_t *size,
                                      char *p_frame_type,
-                                     pj_uint32_t *bit_info)
+                                     pj_uint32_t *bit_info,
+                                     pj_uint16_t *packet_seq)
 {
     pjmedia_jbuf_get_frame3(jb, frame, size, p_frame_type, bit_info,
-                            NULL, NULL);
+                            NULL, NULL, packet_seq);
 }
 
 /*
@@ -1117,7 +1133,8 @@ PJ_DEF(void) pjmedia_jbuf_get_frame3(pjmedia_jbuf *jb,
                                      char *p_frame_type,
                                      pj_uint32_t *bit_info,
                                      pj_uint32_t *ts,
-                                     int *seq)
+                                     int *seq,
+                                     pj_uint16_t *packet_seq)
 {
     if (jb->jb_prefetching) {
 
@@ -1142,7 +1159,7 @@ PJ_DEF(void) pjmedia_jbuf_get_frame3(pjmedia_jbuf *jb,
 
         /* Try to retrieve a frame from frame list */
         res = jb_framelist_get(&jb->jb_framelist, frame, size, &ftype,
-                               bit_info, ts, seq);
+                               bit_info, ts, seq, packet_seq);
         if (res) {
             /* We've successfully retrieved a frame from the frame list, but
              * the frame could be a blank frame!

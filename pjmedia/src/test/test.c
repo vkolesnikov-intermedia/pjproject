@@ -98,6 +98,9 @@ int test_main(void)
 #if HAS_JBUF_TEST
     DO_TEST(jbuf_main());
 #endif
+#if HAS_NACK_BUFFER_TEST
+    DO_TEST(nack_buffer_test());
+#endif
 #if HAS_MIPS_TEST
     DO_TEST(mips_test());
 #endif

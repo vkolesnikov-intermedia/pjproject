@@ -58,6 +58,8 @@ void RtcpStreamStat::fromPj(const pjmedia_rtcp_stream_stat &prm)
     this->loss            = prm.loss;
     this->reorder         = prm.loss;
     this->dup             = prm.dup;
+    this->nackCount       = prm.nack_cnt;
+    this->usefulNackCount = prm.useful_nack_cnt;
     this->lossPeriodUsec.fromPj(prm.loss_period);
     this->lossType.burst  = prm.loss_type.burst;
     this->lossType.random = prm.loss_type.random;
