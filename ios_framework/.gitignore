@@ -1,0 +1,10 @@
+bcg729/
+openssl/
+opus/
+Sources/lib
+tmp/
+
+!opus/opus.sh
+!openssl/openssl.sh
+!bcg729/bcg729.sh
+!bcg729/ios.toolchain.cmake

@@ -1,0 +1,9 @@
+framework module PJSipIOS {
+
+    umbrella header "PJSip-umbrella.h"
+
+    export *
+    module * { export * }
+    
+    link "PJSipIOS"
+}
