@@ -36,11 +36,9 @@ jobs:
         run: |
           tar -czvf "$RELEASE_ARCHIVE_NAME".tar.gz -C output .
       - 
-        name: Create release
-        id: create_release
+        name: Update release
+        id: update_release
         uses: ncipollo/release-action@v1
         with:
-          name: Android release ${{ github.ref_name }}
           artifacts: ${{ env.RELEASE_ARCHIVE_NAME }}.tar.gz
-          draft: true
-          prerelease: false
+          allowUpdates: true
