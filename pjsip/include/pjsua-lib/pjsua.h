@@ -594,13 +594,8 @@ typedef struct pjsua_stream_stat
     /** Jitter buffer statistic. */
     pjmedia_jb_state    jbuf;
 
-#if defined(PJMEDIA_HAS_OPUS_CODEC) && (PJMEDIA_HAS_OPUS_CODEC!=0)
-
     /** Codec statistics. */
-    pjmedia_codec_opus_stat  opus_stat;
-
-#endif /* PJMEDIA_HAS_OPUS_CODEC */
-
+    pjmedia_codec_stat  codec_stat;
 } pjsua_stream_stat;
 
 

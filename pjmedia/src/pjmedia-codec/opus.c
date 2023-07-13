@@ -96,6 +96,10 @@ static pj_status_t codec_decode( pjmedia_codec *codec,
 static pj_status_t codec_recover( pjmedia_codec *codec,
                                   unsigned output_buf_len,
                                   struct pjmedia_frame *output);
+static pj_status_t codec_stat( pjmedia_codec *codec,
+                               pjmedia_codec_stat *stat);
+
+static pj_status_t reset_stat(pjmedia_codec_opus_stat *stat);
 
 /* Definition for Opus operations. */
 static pjmedia_codec_op opus_op = 
@@ -107,7 +111,8 @@ static pjmedia_codec_op opus_op =
     &codec_parse,
     &codec_encode,
     &codec_decode,
-    &codec_recover
+    &codec_recover,
+    &codec_stat
 };
 
 /* Definition for Opus factory operations. */
@@ -590,7 +595,7 @@ static pj_status_t factory_alloc_codec( pjmedia_codec_factory *factory,
     codec->codec_data    = opus_data;
 
     /* Reset summary */
-    pjmedia_codec_opus_reset_stat(&opus_data->stat);
+    reset_stat(&opus_data->stat);
 
     *p_codec = codec;
     return PJ_SUCCESS;
@@ -1234,9 +1239,22 @@ static pj_status_t  codec_recover( pjmedia_codec *codec,
 }
 
 /**
+ * Get OPUS status structure
+ */
+static pj_status_t codec_stat( pjmedia_codec *codec, pjmedia_codec_stat *stat )
+{
+    PJ_ASSERT_RETURN(codec && stat, PJ_EINVAL);
+    struct opus_data *opus_data = (struct opus_data *)codec->codec_data;
+    pj_mutex_lock (opus_data->mutex);
+    pj_memcpy(&stat->opus, &opus_data->stat, sizeof(pjmedia_codec_opus_stat));
+    pj_mutex_unlock (opus_data->mutex);
+    return PJ_SUCCESS;
+}
+
+/**
  * Reset OPUS codec status structure
  */
-PJ_DEF(pj_status_t) pjmedia_codec_opus_reset_stat( pjmedia_codec_opus_stat *stat )
+static pj_status_t reset_stat(pjmedia_codec_opus_stat *stat)
 {
     PJ_ASSERT_RETURN(stat, PJ_EINVAL);
     stat->pkt_cnt = 0;
@@ -1246,22 +1264,6 @@ PJ_DEF(pj_status_t) pjmedia_codec_opus_reset_stat( pjmedia_codec_opus_stat *stat
     stat->recover_with_copy_cnt = 0;
     stat->recover_with_plc_cnt = 0;
     stat->recover_with_fec_cnt = 0;
-    return PJ_SUCCESS;
-}
-
-/**
- * Get OPUS status structure
- */
-PJ_DEF(pj_status_t) pjmedia_codec_opus_get_stat( pjmedia_codec *codec, pjmedia_codec_opus_stat *pstat )
-{
-    PJ_ASSERT_RETURN(codec && pstat, PJ_EINVAL);
-    if (codec->op != &opus_op) {
-        return PJ_EINVAL;
-    }
-    struct opus_data *opus_data = (struct opus_data *)codec->codec_data;
-    pj_mutex_lock (opus_data->mutex);
-    pj_memcpy(pstat, &opus_data->stat, sizeof(struct pjmedia_codec_opus_stat));
-    pj_mutex_unlock (opus_data->mutex);
     return PJ_SUCCESS;
 }
 

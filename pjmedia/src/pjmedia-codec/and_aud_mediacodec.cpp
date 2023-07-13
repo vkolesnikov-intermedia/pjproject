@@ -103,7 +103,8 @@ static pjmedia_codec_op and_media_op =
     &and_media_codec_parse,
     &and_media_codec_encode,
     &and_media_codec_decode,
-    &and_media_codec_recover
+    &and_media_codec_recover,
+    NULL
 };
 
 /* Definition for Android MediaCodec codecs factory operations. */

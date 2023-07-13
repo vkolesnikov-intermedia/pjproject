@@ -105,7 +105,8 @@ static pjmedia_codec_op codec_op =
     &codec_parse,
     &codec_encode,
     &codec_decode,
-    &codec_recover
+    &codec_recover,
+    NULL
 };
 
 /* Definition for G722.1 codec factory operations. */

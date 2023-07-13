@@ -380,25 +380,21 @@ void StreamInfo::fromPj(const pjsua_stream_info &info)
     }
 }
 
-#if defined(PJMEDIA_HAS_OPUS_CODEC) && (PJMEDIA_HAS_OPUS_CODEC!=0)
-void CodecOpusStat::fromPj(const pjmedia_codec_opus_stat &opus_stat) {
-    pktCnt = opus_stat.pkt_cnt;
-    pktWithFecCnt = opus_stat.pkt_with_fec_cnt;
-    audCnt = opus_stat.aud_cnt;
-    fecCnt = opus_stat.fec_cnt;
-    recoverWithCopyCnt = opus_stat.recover_with_copy_cnt;
-    recoverWithPlcCnt = opus_stat.recover_with_plc_cnt;
-    recoverWithFecCnt = opus_stat.recover_with_fec_cnt;
+void CodecStat::fromPj(const pjmedia_codec_stat &codec_stat) {
+    opus.packetCount = codec_stat.opus.pkt_cnt;
+    opus.packetWithFecCount = codec_stat.opus.pkt_with_fec_cnt;
+    opus.audioCount = codec_stat.opus.aud_cnt;
+    opus.fecCount = codec_stat.opus.fec_cnt;
+    opus.recoverWithCopyCount = codec_stat.opus.recover_with_copy_cnt;
+    opus.recoverWithPlcCount = codec_stat.opus.recover_with_plc_cnt;
+    opus.recoverWithFecCount = codec_stat.opus.recover_with_fec_cnt;
 }
-#endif
 
 void StreamStat::fromPj(const pjsua_stream_stat &prm)
 {
     rtcp.fromPj(prm.rtcp);
     jbuf.fromPj(prm.jbuf);
-#if defined(PJMEDIA_HAS_OPUS_CODEC) && (PJMEDIA_HAS_OPUS_CODEC!=0)
-    opusStat.fromPj(prm.opus_stat);
-#endif
+    codecStat.fromPj(prm.codec_stat);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

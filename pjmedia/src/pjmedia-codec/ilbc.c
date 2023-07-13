@@ -102,7 +102,8 @@ static pjmedia_codec_op ilbc_op =
     &ilbc_codec_parse,
     &ilbc_codec_encode,
     &ilbc_codec_decode,
-    &ilbc_codec_recover
+    &ilbc_codec_recover,
+    NULL
 };
 
 /* Definition for iLBC codec factory operations. */

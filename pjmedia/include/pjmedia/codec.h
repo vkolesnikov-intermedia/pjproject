@@ -329,6 +329,32 @@ PJ_DECL(pjmedia_codec_param*) pjmedia_codec_param_clone(
  */
 typedef struct pjmedia_codec pjmedia_codec;
 
+/** Statistic not specified. */
+#define PJMEDIA_CODEC_STAT_NOT_SPECIFIED		999999
+
+/**
+ * Opus codec statistics.
+ */
+typedef struct pjmedia_codec_opus_stat
+{
+    unsigned  pkt_cnt;                 /**< Packet count                   */
+    unsigned  pkt_with_fec_cnt;        /**< Packet with FEC count          */
+    unsigned  aud_cnt;                 /**< Audio packet count             */
+    unsigned  fec_cnt;                 /**< FEC count                      */
+    unsigned  recover_with_copy_cnt;   /**< Recoverwith copy               */
+    unsigned  recover_with_plc_cnt;    /**< Recover with PLC packet count  */
+    unsigned  recover_with_fec_cnt;    /**< Recover with FEC packet count  */
+} pjmedia_codec_opus_stat;
+
+/**
+ * Codec statistics.
+ */
+typedef struct pjmedia_codec_stat
+{
+    pjmedia_codec_opus_stat opus;
+} pjmedia_codec_stat;
+
+
 
 /**
  * This structure describes codec operations. Each codec MUST implement
@@ -485,6 +511,20 @@ typedef struct pjmedia_codec_op
     pj_status_t (*recover)(pjmedia_codec *codec,
                            unsigned out_size,
                            struct pjmedia_frame *output);
+
+    /**
+     * Get codec statistics.
+     *
+     * Application should call #pjmedia_codec_get_stat() instead of 
+     * calling this function directly.
+     *
+     * @param codec     The codec instance.
+     * @param codec_stat The codec statistics.
+     *
+     * @return          PJ_SUCCESS on success;
+     */
+    pj_status_t (*stats)(pjmedia_codec *codec,
+                         pjmedia_codec_stat *codec_stat);
 } pjmedia_codec_op;
 
 
@@ -948,6 +988,12 @@ pjmedia_codec_mgr_alloc_codec( pjmedia_codec_mgr *mgr,
 PJ_DECL(pj_status_t) pjmedia_codec_mgr_dealloc_codec(pjmedia_codec_mgr *mgr, 
                                                      pjmedia_codec *codec);
 
+/**
+ * Initialize codec stat.
+ *
+ * * @param stat The statistic to be initialized.
+ */                                                 
+PJ_DECL(void) pjmedia_codec_stat_default(pjmedia_codec_stat *stat);                                                  
 
 
 /** 
@@ -1108,6 +1154,23 @@ PJ_INLINE(pj_status_t) pjmedia_codec_recover( pjmedia_codec *codec,
 {
     if (codec->op && codec->op->recover)
         return (*codec->op->recover)(codec, out_size, output);
+    else
+        return PJ_ENOTSUP;
+}
+
+/**
+ * Get the codec statistics.
+ *
+ * @param codec         The codec instance.
+ * @param codec_stat    Pointer to receive the stats. 
+ *
+ * @return              PJ_SUCCESS on success;
+ */
+PJ_INLINE(pj_status_t) pjmedia_codec_get_stat( pjmedia_codec *codec,
+                                               pjmedia_codec_stat *codec_stat)
+{
+    if (codec->op && codec->op->stats)
+        return (*codec->op->stats)(codec, codec_stat);
     else
         return PJ_ENOTSUP;
 }

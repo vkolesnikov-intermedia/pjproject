@@ -107,10 +107,11 @@ static pjmedia_codec_op g722_op =
     &g722_codec_encode,
     &g722_codec_decode,
 #if !PLC_DISABLED
-    &g722_codec_recover
+    &g722_codec_recover,
 #else
-    NULL
+    NULL,
 #endif
+    NULL
 };
 
 /* Definition for G722 codec factory operations. */

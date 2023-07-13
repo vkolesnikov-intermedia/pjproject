@@ -98,10 +98,11 @@ static pjmedia_codec_op l16_op =
     &l16_encode,
     &l16_decode,
 #if !PLC_DISABLED
-    &l16_recover
+    &l16_recover,
 #else
-    NULL
+    NULL,
 #endif
+    NULL
 };
 
 /* Definition for L16 codec factory operations. */

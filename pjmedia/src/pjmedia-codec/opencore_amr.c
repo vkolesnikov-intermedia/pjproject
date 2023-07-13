@@ -130,7 +130,8 @@ static pjmedia_codec_op amr_op =
     &amr_codec_parse,
     &amr_codec_encode,
     &amr_codec_decode,
-    &amr_codec_recover
+    &amr_codec_recover,
+    NULL
 };
 
 /* Definition for AMR codec factory operations. */

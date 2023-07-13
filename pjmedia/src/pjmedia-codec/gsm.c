@@ -103,10 +103,11 @@ static pjmedia_codec_op gsm_op =
     &gsm_codec_encode,
     &gsm_codec_decode,
 #if !PLC_DISABLED
-    &gsm_codec_recover
+    &gsm_codec_recover,
 #else
-    NULL
+    NULL,
 #endif
+    NULL
 };
 
 /* Definition for GSM codec factory operations. */

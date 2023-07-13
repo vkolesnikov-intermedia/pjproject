@@ -95,7 +95,8 @@ static pjmedia_codec_op ipp_op =
     &ipp_codec_parse,
     &ipp_codec_encode,
     &ipp_codec_decode,
-    &ipp_codec_recover
+    &ipp_codec_recover,
+    NULL
 };
 
 /* Definition for IPP codecs factory operations. */

@@ -94,7 +94,8 @@ static pjmedia_codec_op bcg729_op =
     &bcg729_codec_parse,
     &bcg729_codec_encode,
     &bcg729_codec_decode,
-    &bcg729_codec_recover
+    &bcg729_codec_recover,
+    NULL
 };
 
 /* Definition for BCG729 codec factory operations. */

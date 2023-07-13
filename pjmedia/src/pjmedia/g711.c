@@ -97,10 +97,11 @@ static pjmedia_codec_op g711_op =
     &g711_encode,
     &g711_decode,
 #if !PLC_DISABLED
-    &g711_recover
+    &g711_recover,
 #else
-    NULL
+    NULL,
 #endif
+    NULL
 };
 
 /* Definition for G711 codec factory operations. */
