@@ -42,3 +42,4 @@ jobs:
         with:
           artifacts: ${{ env.RELEASE_ARCHIVE_NAME }}.tar.gz
           allowUpdates: true
+          omitNameDuringUpdate: true
