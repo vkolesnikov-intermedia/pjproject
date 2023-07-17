@@ -14,7 +14,7 @@ jobs:
     permissions:
       contents: write
     container: 
-      image: rinekri/pjsip-android-builder:latest  # TODO: replace with intermedia image when it will be uploaded
+      image: ghcr.io/intermedia-net/pjproject-android-builder:master
       volumes:
         - ${{ github.workspace }}/input:/home/tools/pjproject 
         - ${{ github.workspace }}/output:/home/output/pjsip-build-output
