@@ -1188,6 +1188,7 @@ struct OutOfDialogRequestContext
     pjsip_tx_data *request;
     string token;
     pj_int32_t timeout;
+    bool isAsyncStarted = false;
 
 public:
     /**
@@ -1208,7 +1209,9 @@ static void processSecondOutOfDialogMessage(void *token, pjsip_event *e)
     //call callback with status code
     PJ_LOG(4, (THIS_FILE, "recreated custom message request status = %d", statusCode));
     context->account->onOutOfDialogResponse(context->token, event);
-    delete context;
+    if (context->isAsyncStarted) {
+        delete context;
+    }
 }
 
 static void processFirstOutOfDialogMessage(void *token, pjsip_event *e) 
@@ -1247,7 +1250,9 @@ static void processFirstOutOfDialogMessage(void *token, pjsip_event *e)
         //call callback with status code
         PJ_LOG(4, (THIS_FILE, "custom message request status = %d", statusCode));
         context->account->onOutOfDialogResponse(context->token, event);
-        delete context;
+        if (context->isAsyncStarted) {
+            delete context;
+        }
     }
 }
 
@@ -1278,5 +1283,14 @@ void Account::sendOutOfDialogRequest(const AccountSendOutOfDialogRequestParam &p
     if (status != PJ_SUCCESS) {
         delete context;
         PJSUA2_RAISE_ERROR(status);
+    } else {
+        /**
+         * pjsip_endpt_send_request can call callback synchronously. It happens when no internet connection for example.
+         * We should not delete context object in synch case, becuase we will delete it above, in current method.
+         * 
+         * On the other hand, when pjsip_endpt_send_request calls callback asynchronously we should delete context object inside callback.
+         * That's why we use this boolean flag.
+         */
+        context->isAsyncStarted = true;
     }
 }
