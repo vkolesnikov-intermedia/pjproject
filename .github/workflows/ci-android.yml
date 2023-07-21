@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      packages: read
     container: 
       image: ghcr.io/intermedia-net/pjproject-android-builder:master
       volumes:
