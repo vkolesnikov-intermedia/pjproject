@@ -672,6 +672,19 @@ public:
 };
 
 /**
+ * Opus codec statistics
+ */
+struct OpusCodecStat {
+    unsigned  packetCount;              /**< Packet count                   */
+    unsigned  packetWithFecCount;       /**< Packet with FEC count          */
+    unsigned  audioCount;               /**< Audio packet count             */
+    unsigned  fecCount;                 /**< FEC count                      */
+    unsigned  recoverWithCopyCount;     /**< Recoverwith copy               */
+    unsigned  recoverWithPlcCount;      /**< Recover with PLC packet count  */
+    unsigned  recoverWithFecCount;      /**< Recover with FEC packet count  */
+};
+
+/**
  * Codec statistics.
  */
 struct CodecStat
@@ -679,15 +692,7 @@ struct CodecStat
     /**
     * Opus codec statistic.
     */ 
-    struct {
-        unsigned  packetCount;              /**< Packet count                   */
-        unsigned  packetWithFecCount;       /**< Packet with FEC count          */
-        unsigned  audioCount;               /**< Audio packet count             */
-        unsigned  fecCount;                 /**< FEC count                      */
-        unsigned  recoverWithCopyCount;     /**< Recoverwith copy               */
-        unsigned  recoverWithPlcCount;      /**< Recover with PLC packet count  */
-        unsigned  recoverWithFecCount;      /**< Recover with FEC packet count  */
-    } opus;
+    OpusCodecStat opus;
 
 public:
     /**
