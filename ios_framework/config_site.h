@@ -4,4 +4,5 @@
 #define PJMEDIA_HAS_OPUS_CODEC 1
 #define PJMEDIA_HAS_VIDEO 0
 #define PJMEDIA_HAS_VID_TOOLBOX_CODEC 0
+#define PJ_QOS_IMPLEMENTATION PJ_QOS_BSD
 #include <pj/config_site_sample.h>
