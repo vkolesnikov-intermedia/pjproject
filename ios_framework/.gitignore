@@ -3,6 +3,7 @@ openssl/
 opus/
 Sources/lib
 tmp/
+artifact/
 
 !opus/opus.sh
 !openssl/openssl.sh
