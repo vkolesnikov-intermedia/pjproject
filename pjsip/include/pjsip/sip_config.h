@@ -111,9 +111,9 @@ typedef struct pjsip_cfg_t
         pj_bool_t disable_tcp_switch;
 
         /**
-         * Disable automatic switching to TLS if target-URI does not use
-         * "sips" scheme nor TLS transport, even when request-URI uses
-         * "sips" scheme.
+         * Disable automatic switching to secure transport (such as TLS)
+         * if target-URI does not use "sips" scheme nor secure transport,
+         * even when request-URI uses "sips" scheme.
          *
          * Default is PJSIP_DONT_SWITCH_TO_TLS.
          */
@@ -397,9 +397,13 @@ PJ_INLINE(pjsip_cfg_t*) pjsip_cfg(void)
  * As specified RFC 3261 section 8.1.2, when request-URI uses "sips" scheme,
  * TLS must always be used regardless of the target-URI scheme or transport
  * type.
+ * Update: Newer RFCs, such as RFC 5630 and 7118, expands this by allowing
+ * the use of other transports as long as the SIP resource designated by
+ * the target SIPS URI is contacted securely.
  *
- * This option will specify whether the behavior of automatic switching to TLS
- * should be disabled, i.e: regard the target-URI scheme or transport type.
+ * This option will specify whether the behavior of automatic switching to secure
+ * transport (such as TLS) should be disabled, i.e: regard the target-URI scheme
+ * or transport type.
  *
  * This option can also be controlled at run-time by the \a disable_tls_switch
  * setting in pjsip_cfg_t.
@@ -673,6 +677,25 @@ PJ_INLINE(pjsip_cfg_t*) pjsip_cfg(void)
 
 
 /**
+ * The initial timeout interval for incoming TCP/TLS transports
+ * (i.e. server side) in the event that no valid SIP message is received
+ * following a successful connection. The value is in seconds.
+ * Disable the timeout by setting it to 0.
+ *
+ * Note that even if this is disabled, the connection might still get closed
+ * when it is idle or not referred anymore. Have a look at \a
+ * PJSIP_TRANSPORT_SERVER_IDLE_TIME.
+ * 
+ * Notes:
+ * - keep-alive packet is not considered as a valid message.
+ *
+ * Default: 0
+*/
+#ifndef PJSIP_TRANSPORT_SERVER_IDLE_TIME_FIRST
+#   define PJSIP_TRANSPORT_SERVER_IDLE_TIME_FIRST     0
+#endif
+
+/**
  * Maximum number of usages for a transport before a new transport is
  * created. This only applies for ephemeral transports such as TCP.
  *
@@ -782,14 +805,20 @@ PJ_INLINE(pjsip_cfg_t*) pjsip_cfg(void)
 
 
 /**
- * Initial timeout interval to be applied to incoming transports (i.e. server
- * side) when no data received after a successful connection. Value is in
- * seconds. Disable the timeout by setting it to 0.
+ * The initial timeout interval for incoming TCP transports
+ * (i.e. server side) in the event that no valid SIP message is received
+ * following a successful connection. The value is in seconds.
+ * Disable the timeout by setting it to 0.
  *
- * Note that even when this is disable, the connection might still get closed
+ * Note that even if this is disabled, the connection might still get closed
  * when it is idle or not referred anymore. Have a look at \a
- * PJSIP_TRANSPORT_SERVER_IDLE_TIME
+ * PJSIP_TRANSPORT_SERVER_IDLE_TIME.
  *
+ * Notes:
+ * - keep-alive packet is not considered as a valid message.
+ * - This macro is specific to TCP usage and takes precedence over
+ *   a\ PJSIP_TRANSPORT_SERVER_IDLE_TIME_FIRST when both are set.
+ * 
  * Default: 0 (disabled)
  */
 #ifndef PJSIP_TCP_INITIAL_TIMEOUT
@@ -920,7 +949,7 @@ PJ_INLINE(pjsip_cfg_t*) pjsip_cfg(void)
  * Initial memory block for the endpoint.
  */
 #ifndef PJSIP_POOL_LEN_ENDPT
-#   define PJSIP_POOL_LEN_ENDPT         (4000)
+#   define PJSIP_POOL_LEN_ENDPT         (16000)
 #endif
 
 /**
@@ -1094,9 +1123,9 @@ PJ_INLINE(pjsip_cfg_t*) pjsip_cfg(void)
 #define PJSIP_MAX_HNAME_LEN             64
 
 /** Dialog's pool setting. */
-#define PJSIP_POOL_LEN_DIALOG           1200
+#define PJSIP_POOL_LEN_DIALOG           4000
 /** Dialog's pool setting. */
-#define PJSIP_POOL_INC_DIALOG           512
+#define PJSIP_POOL_INC_DIALOG           4000
 
 /** Maximum header types. */
 #define PJSIP_MAX_HEADER_TYPES          72

@@ -362,6 +362,7 @@ pj_status_t create_uas_dialog( pjsip_user_agent *ua,
     pjsip_contact_hdr *contact_hdr;
     pjsip_rr_hdr *rr;
     pjsip_transaction *tsx = NULL;
+    pj_grp_lock_t *tsx_lock = NULL;
     pj_str_t tmp;
     enum { TMP_LEN=PJSIP_MAX_URL_SIZE };
     pj_ssize_t len;
@@ -408,8 +409,9 @@ pj_status_t create_uas_dialog( pjsip_user_agent *ua,
     len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                           dlg->local.info->uri, tmp.ptr, TMP_LEN);
     if (len < 1) {
-        pj_ansi_strcpy(tmp.ptr, "<-error: uri too long->");
-        tmp.slen = pj_ansi_strlen(tmp.ptr);
+        tmp.slen=pj_ansi_strxcpy(tmp.ptr, "<-error: uri too long->", TMP_LEN);
+        if (tmp.slen < 0)
+            tmp.slen = pj_ansi_strlen(tmp.ptr);
     } else
         tmp.slen = len;
 
@@ -459,8 +461,9 @@ pj_status_t create_uas_dialog( pjsip_user_agent *ua,
     len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                           dlg->remote.info->uri, tmp.ptr, TMP_LEN);
     if (len < 1) {
-        pj_ansi_strcpy(tmp.ptr, "<-error: uri too long->");
-        tmp.slen = pj_ansi_strlen(tmp.ptr);
+        tmp.slen=pj_ansi_strxcpy(tmp.ptr, "<-error: uri too long->", TMP_LEN);
+        if (tmp.slen<0)
+            tmp.slen = pj_ansi_strlen(tmp.ptr);
     } else
         tmp.slen = len;
 
@@ -468,9 +471,10 @@ pj_status_t create_uas_dialog( pjsip_user_agent *ua,
     pj_strdup(dlg->pool, &dlg->remote.info_str, &tmp);
     
     /* Save initial destination host from transport's info */
-    pj_strdup(dlg->pool, &dlg->initial_dest,
-              &rdata->tp_info.transport->remote_name.host);
-
+    if (rdata->tp_info.transport->dir == PJSIP_TP_DIR_OUTGOING) {
+        pj_strdup(dlg->pool, &dlg->initial_dest,
+                  &rdata->tp_info.transport->remote_name.host);
+    }
 
     /* Init remote's contact from Contact header.
      * Iterate the Contact URI until we find sip: or sips: scheme.
@@ -558,8 +562,20 @@ pj_status_t create_uas_dialog( pjsip_user_agent *ua,
         lock_incremented = PJ_TRUE;
     }
 
+    /* Create tsx lock first so we can lock it before creating
+     * the transaction. This is to avoid deadlock by preventing
+     * the newly created transaction to process messages before
+     * this function returns.
+     */
+    status = pj_grp_lock_create(dlg->pool, NULL, &tsx_lock);
+    if (status != PJ_SUCCESS)
+        goto on_error;
+
+    pj_grp_lock_add_ref(tsx_lock);
+    pj_grp_lock_acquire(tsx_lock);
+
     /* Create UAS transaction for this request. */
-    status = pjsip_tsx_create_uas(dlg->ua, rdata, &tsx);
+    status = pjsip_tsx_create_uas2(dlg->ua, rdata, tsx_lock, &tsx);
     if (status != PJ_SUCCESS)
         goto on_error;
 
@@ -588,12 +604,20 @@ pj_status_t create_uas_dialog( pjsip_user_agent *ua,
     /* Feed the first request to the transaction. */
     pjsip_tsx_recv_msg(tsx, rdata);
 
+    pj_grp_lock_release(tsx_lock);
+    pj_grp_lock_dec_ref(tsx_lock);
+
     /* Done. */
     *p_dlg = dlg;
     PJ_LOG(5,(dlg->obj_name, "UAS dialog created"));
     return PJ_SUCCESS;
 
 on_error:
+    if (tsx_lock) {
+        pj_grp_lock_release(tsx_lock);
+        pj_grp_lock_dec_ref(tsx_lock);
+    }
+
     if (tsx) {
         pjsip_tsx_terminate(tsx, 500);
         pj_assert(dlg->tsx_count>0);
@@ -1362,6 +1386,8 @@ PJ_DEF(pj_status_t) pjsip_dlg_send_request( pjsip_dialog *dlg,
         }
 
     } else {
+        dlg->ack_sent = PJ_TRUE;
+
         /* Set transport selector */
         pjsip_tx_data_set_transport(tdata, &dlg->tp_sel);
 
@@ -1674,6 +1700,7 @@ void pjsip_dlg_on_rx_request( pjsip_dialog *dlg, pjsip_rx_data *rdata )
 {
     pj_status_t status;
     pjsip_transaction *tsx = NULL;
+    pj_grp_lock_t *tsx_lock = NULL;
     pj_bool_t processed = PJ_FALSE;
     unsigned i;
 
@@ -1722,7 +1749,18 @@ void pjsip_dlg_on_rx_request( pjsip_dialog *dlg, pjsip_rx_data *rdata )
     if (pjsip_rdata_get_tsx(rdata) == NULL &&
         rdata->msg_info.msg->line.req.method.id != PJSIP_ACK_METHOD)
     {
-        status = pjsip_tsx_create_uas(dlg->ua, rdata, &tsx);
+        /* Create tsx lock first so we can lock it before creating
+         * the transaction. This is to avoid deadlock by preventing
+         * the newly created transaction to process messages before
+         * this function returns.
+         */
+        status = pj_grp_lock_create(dlg->pool, NULL, &tsx_lock);
+        if (status == PJ_SUCCESS) {
+            pj_grp_lock_add_ref(tsx_lock);
+            pj_grp_lock_acquire(tsx_lock);
+            status = pjsip_tsx_create_uas2(dlg->ua, rdata, tsx_lock, &tsx);
+        }
+
         if (status != PJ_SUCCESS) {
             /* Once case for this is when re-INVITE contains same
              * Via branch value as previous INVITE (ticket #965).
@@ -1803,6 +1841,10 @@ void pjsip_dlg_on_rx_request( pjsip_dialog *dlg, pjsip_rx_data *rdata )
     }
 
 on_return:
+    if (tsx_lock) {
+        pj_grp_lock_release(tsx_lock);
+        pj_grp_lock_dec_ref(tsx_lock);
+    }
     /* Unlock dialog and dec session, may destroy dialog. */
     pjsip_dlg_dec_lock(dlg);
     pj_log_pop_indent();
@@ -1831,8 +1873,9 @@ static void dlg_update_routeset(pjsip_dialog *dlg, const pjsip_rx_data *rdata)
      * transaction as the initial transaction that establishes dialog.
      */
     if (dlg->role == PJSIP_ROLE_UAC) {
-        /* Save initial destination host from transport's info. */
-        if (!dlg->initial_dest.slen) {
+        /* Update initial destination host from transport's info. */
+        if (rdata->tp_info.transport->dir == PJSIP_TP_DIR_OUTGOING)
+        {
             pj_strdup(dlg->pool, &dlg->initial_dest,
                       &rdata->tp_info.transport->remote_name.host);
         }
@@ -1942,8 +1985,7 @@ void pjsip_dlg_on_rx_response( pjsip_dialog *dlg, pjsip_rx_data *rdata )
      */
     if ((dlg->state == PJSIP_DIALOG_STATE_NULL &&
          pjsip_method_creates_dialog(&rdata->msg_info.cseq->method) &&
-         (res_code > 100 && res_code < 300) &&
-         rdata->msg_info.to->tag.slen)
+         (res_code > 100 && res_code < 300))
          ||
         (dlg->role==PJSIP_ROLE_UAC &&
          !dlg->uac_has_2xx &&
@@ -2078,7 +2120,8 @@ void pjsip_dlg_on_rx_response( pjsip_dialog *dlg, pjsip_rx_data *rdata )
         pj_status_t status;
 
         if (rdata->msg_info.cseq->method.id==PJSIP_INVITE_METHOD &&
-            rdata->msg_info.msg->line.status.code/100 == 2)
+            rdata->msg_info.msg->line.status.code/100 == 2 &&
+            !dlg->ack_sent)
         {
             pjsip_tx_data *ack;
 
@@ -2288,7 +2331,7 @@ PJ_DEF(const pjsip_hdr*) pjsip_dlg_get_remote_cap_hdr(pjsip_dialog *dlg,
 
     hdr = dlg->rem_cap_hdr.next;
     while (hdr != &dlg->rem_cap_hdr) {
-        if ((htype != PJSIP_H_OTHER && htype == hdr->type) ||
+        if ((htype != PJSIP_H_OTHER && htype == (int)hdr->type) ||
             (htype == PJSIP_H_OTHER && pj_stricmp(&hdr->name, hname) == 0))
         {
             pjsip_dlg_dec_lock(dlg);

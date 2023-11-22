@@ -437,6 +437,43 @@ struct OnMediaEventParam
 };
 
 /**
+ * Parameter of Endpoint::onRejectedIncomingCall() callback.
+ */
+struct OnRejectedIncomingCallParam
+{
+    /**
+     * The incoming call id. This will be set to PJSUA_INVALID_ID when there is
+     * no available call slot at the time.
+     */
+    pjsua_call_id   callId;
+
+    /**
+     * Local URI.
+     */
+    std::string     localInfo;
+
+    /**
+     * Remote URI.
+     */
+    std::string     remoteInfo;
+
+    /**
+     * Rejection code.
+     */
+    int             statusCode;
+
+    /**
+     * Rejection text.
+     */
+    std::string     reason;
+
+    /**
+     * The original INVITE message, on some cases it is not available.
+     */
+    SipRxData       rdata;
+};
+
+/**
  * This structure describes authentication challenge used in Proxy-Authenticate
  * or WWW-Authenticate for digest authentication scheme.
  */
@@ -700,6 +737,9 @@ struct UaConfig : public PersistentObject
      *
      * If this is enabled, the library will respond 200/OK to the NOTIFY
      * request and forward the request to Endpoint::onMwiInfo() callback.
+     * 
+     * Note: the callback will not be invoked and 481/"No account to handle" response
+     * will be sent if this is enabled but no account is configured.
      *
      * See also AccountMwiConfig.enabled.
      *
@@ -1906,11 +1946,28 @@ public:
      */
     virtual pj_status_t onCredAuth(OnCredAuthParam &prm);
 
+    /**
+     * This callback will be invoked when the library implicitly rejects
+     * an incoming call.
+     * 
+     * In addition to being declined explicitly using the Call::answer()
+     * method, the library may also automatically reject the incoming call
+     * due to different scenarios, e.g:
+     * - no available call slot.
+     * - no available account to handle the call.
+     * - when an incoming INVITE is received with, for instance, a message
+     *   containing invalid SDP.
+     *
+     * @param prm       Callback parameters.
+     */
+    virtual void onRejectedIncomingCall(OnRejectedIncomingCallParam &prm)
+    { PJ_UNUSED_ARG(prm); }
+
 private:
     static Endpoint             *instance_;     // static instance
     LogWriter                   *writer;        // Custom writer, if any
-    AudDevManager                audioDevMgr;
-    VidDevManager                videoDevMgr;
+    AudDevManager               *audioDevMgr;
+    VidDevManager               *videoDevMgr;
 #if !DEPRECATED_FOR_TICKET_2232
     CodecInfoVector              codecInfoList;
     CodecInfoVector              videoCodecInfoList;
@@ -2086,6 +2143,10 @@ private:
                                              const pjsip_cred_info *cred,
                                              const pj_str_t *method,
                                              pjsip_digest_credential *auth);
+
+    static void on_rejected_incoming_call(
+                                      const pjsua_on_rejected_incoming_call_param *param);
+
     friend class Account;
 
 

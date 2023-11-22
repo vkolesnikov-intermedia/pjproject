@@ -254,7 +254,7 @@ pjmedia_vid_dev_factory* pjmedia_darwin_factory(pj_pool_factory *pf)
     struct darwin_factory *f;
     pj_pool_t *pool;
 
-    pool = pj_pool_create(pf, "darwin video", 512, 512, NULL);
+    pool = pj_pool_create(pf, "darwin video", 8000, 4000, NULL);
     f = PJ_POOL_ZALLOC_T(pool, struct darwin_factory);
     f->pf = pf;
     f->pool = pool;
@@ -302,8 +302,8 @@ static pj_status_t darwin_factory_refresh(pjmedia_vid_dev_factory *f)
     /* Init output device */
     qdi = &qf->dev_info[qf->dev_count++];
     pj_bzero(qdi, sizeof(*qdi));
-    pj_ansi_strncpy(qdi->info.name, "UIView", sizeof(qdi->info.name));
-    pj_ansi_strncpy(qdi->info.driver, "iOS", sizeof(qdi->info.driver));
+    pj_ansi_strxcpy(qdi->info.name, "UIView", sizeof(qdi->info.name));
+    pj_ansi_strxcpy(qdi->info.driver, "iOS", sizeof(qdi->info.driver));
     qdi->info.dir = PJMEDIA_DIR_RENDER;
     qdi->info.has_callback = PJ_FALSE;
 #endif
@@ -361,9 +361,11 @@ static pj_status_t darwin_factory_refresh(pjmedia_vid_dev_factory *f)
 
             qdi = &qf->dev_info[qf->dev_count++];
             pj_bzero(qdi, sizeof(*qdi));
-            pj_ansi_strncpy(qdi->info.name, [device.localizedName UTF8String],
+            pj_ansi_strxcpy(qdi->info.name, 
+                            [device.localizedName UTF8String],
                             sizeof(qdi->info.name));
-            pj_ansi_strncpy(qdi->info.driver, "AVF", sizeof(qdi->info.driver));
+            pj_ansi_strxcpy(qdi->info.driver, "AVF", 
+                            sizeof(qdi->info.driver));
             qdi->info.dir = PJMEDIA_DIR_CAPTURE;
             qdi->info.has_callback = PJ_FALSE;
 #if TARGET_OS_IPHONE

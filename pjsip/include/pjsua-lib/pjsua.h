@@ -90,11 +90,11 @@ PJ_BEGIN_DECL
  *
  * Few samples are provided:
  *
-  - @ref page_pjsip_sample_simple_pjsuaua_c \n
+  - Simple pjsua app: \src{pjsip-apps/src/samples/simple_pjsua.c} \n
     Very simple SIP User Agent with registration, call, and media, using
     PJSUA-API, all in under 200 lines of code.
 
-  - @ref page_pjsip_samples_pjsua \n
+  - Pjsua app: \srcdir{pjsip-apps/src/pjsua/} \n
     This is the reference implementation for PJSIP and PJMEDIA.
     PJSUA is a console based application, designed to be simple enough
     to be readble, but powerful enough to demonstrate all features
@@ -1083,6 +1083,63 @@ typedef struct pjsua_call_setting
 
 
 /**
+ * This will contain the information passed from the callback 
+ * \a pjsua_on_rejected_incoming_call_cb.
+ */
+typedef struct pjsua_on_rejected_incoming_call_param {
+    /**
+     * The incoming call id. This will be set to PJSUA_INVALID_ID when there is
+     * no available call slot at the time.
+     */
+    pjsua_call_id   call_id;
+
+    /** 
+     * Local URI.
+     */
+    pj_str_t        local_info;
+
+    /** 
+     * Remote URI.
+     */
+    pj_str_t        remote_info;
+
+    /** 
+     * Rejection code.
+     */
+    int             st_code;
+
+    /**
+     * Rejection text.
+     */
+    pj_str_t        st_text;
+
+    /** 
+     * The original INVITE message, if it's not available this will be set
+     * to NULL.
+     */
+    pjsip_rx_data  *rdata;
+    
+    /** 
+     * Internal.
+     */
+    struct {
+        char    local_info[PJSIP_MAX_URL_SIZE];
+        char    remote_info[PJSIP_MAX_URL_SIZE];
+    } buf_;
+
+} pjsua_on_rejected_incoming_call_param;
+
+/**
+  * Type of callback to be called when incoming call is rejected.
+  *
+  * @param param      The rejected call information.
+  *
+  */
+typedef void (*pjsua_on_rejected_incoming_call_cb)(
+                           const pjsua_on_rejected_incoming_call_param *param);
+
+
+/**
  * This structure describes application callback to receive various event
  * notification from PJSUA-API. All of these callbacks are OPTIONAL,
  * although definitely application would want to implement some of
@@ -1163,7 +1220,7 @@ typedef struct pjsua_callback
      * called *after* the session has been created). The application may change
      * some stream info parameter values, i.e: jb_init, jb_min_pre, jb_max_pre,
      * jb_max, use_ka, rtcp_sdes_bye_disabled, jb_discard_algo (audio),
-     * codec_param->enc_fmt (video).
+     * rx_event_pt (audio), codec_param->enc_fmt (video).
      *
      * @param call_id       Call identification.
      * @param param         The on stream precreate callback parameter.
@@ -1969,6 +2026,23 @@ typedef struct pjsua_callback
      */
     void (*on_media_event)(pjmedia_event *event);
 
+    /**
+     * This callback will be invoked when the library implicitly rejects
+     * an incoming call.
+     * 
+     * In addition to being declined explicitly using the 
+     * #pjsua_call_answer()/#pjsua_call_answer2() method,
+     * the library may also automatically reject the incoming call due 
+     * to different scenarios, e.g:
+     * - no available call slot.
+     * - no available account to handle the call.
+     * - when an incoming INVITE is received with, for instance, a message 
+     *   containing invalid SDP.
+     *
+     * See also #pjsua_on_rejected_incoming_call_cb.
+     */
+    pjsua_on_rejected_incoming_call_cb on_rejected_incoming_call;
+
 } pjsua_callback;
 
 
@@ -2215,6 +2289,9 @@ typedef struct pjsua_config
      * If this is enabled, the library will respond 200/OK to the NOTIFY
      * request and forward the request to \a on_mwi_info() callback.
      *
+     * Note: the callback will not be invoked and 481/"No account to handle" response
+     * will be sent if this is enabled but no account is configured.
+     * 
      * See also \a mwi_enabled field #on pjsua_acc_config.
      *
      * Default: PJ_TRUE
@@ -2414,6 +2491,13 @@ struct pjsua_msg_data
      * pjsua_call_set_hold(), and pjsua_call_update().
      */
     pj_str_t    target_uri;
+
+    /**
+     * Optional local URI (i.e. From header). If NULL, the account ID
+     * \a pjsua_acc_config.id is used for the From header. This field is
+     * currently used only by pjsua_call_make_call() and pjsua_im_send().
+     */
+    pj_str_t    local_uri;
 
     /**
      * Additional message headers as linked list. Application can add
@@ -3100,6 +3184,9 @@ typedef struct pjsua_transport_config
      * to apply QoS tagging to the transport, it's preferable to set this
      * field rather than \a qos_param fields since this is more portable.
      *
+     * For TLS transport, this field will be ignored, the QoS traffic type
+     * can be set via tls_setting.
+     *
      * Default is QoS not set.
      */
     pj_qos_type         qos_type;
@@ -3109,12 +3196,18 @@ typedef struct pjsua_transport_config
      * level operation than setting the \a qos_type field and may not be
      * supported on all platforms.
      *
+     * For TLS transport, this field will be ignored, the low level QoS
+     * parameters can be set via tls_setting.
+     *
      * Default is QoS not set.
      */
     pj_qos_params       qos_params;
 
     /**
      * Specify options to be set on the transport. 
+     *
+     * For TLS transport, this field will be ignored, the socket options
+     * can be set via tls_setting.
      *
      * By default there is no options.
      * 
@@ -3680,6 +3773,8 @@ typedef struct pjsua_turn_config
 
 /**
  * Specify how IPv6 transport should be used in account config.
+ * IP version preference only applies for outgoing direction, for incoming
+ * direction, we will check the corresponding message/offer and match it.
  */
 typedef enum pjsua_ipv6_use
 {
@@ -3691,7 +3786,23 @@ typedef enum pjsua_ipv6_use
     /**
      * IPv6 is enabled.
      */
-    PJSUA_IPV6_ENABLED
+    PJSUA_IPV6_ENABLED = 1,
+    PJSUA_IPV6_ENABLED_NO_PREFERENCE = 1,
+
+    /**
+     * IPv6 is enabled, but IPv4 is preferable.
+     */
+    PJSUA_IPV6_ENABLED_PREFER_IPV4,
+
+    /**
+     * IPv6 is enabled and preferable.
+     */
+    PJSUA_IPV6_ENABLED_PREFER_IPV6,
+
+    /**
+     * Only IPv6 is enabled, IPv4 will not be used.
+     */
+    PJSUA_IPV6_ENABLED_USE_IPV6_ONLY
 
 } pjsua_ipv6_use;
 
@@ -3980,11 +4091,17 @@ typedef struct pjsua_acc_config
      * unregister current Contact, update the Contact with transport address
      * learned from Via header, and register a new Contact to the registrar.
      * This will also update the public name of UDP transport if STUN is
-     * configured. 
+     * configured.
      *
+     * Possible values:
+     * * 0 (disabled).
+     * * 1 (enabled). Update except if both Contact and server's IP address
+     * are public but response contains private IP.
+     * * 2 (enabled). Update without exception.
+     * 
      * See also contact_rewrite_method field.
      *
-     * Default: 1 (yes)
+     * Default: 1
      */
     pj_bool_t allow_contact_rewrite;
 
@@ -4175,7 +4292,20 @@ typedef struct pjsua_acc_config
     pjsua_nat64_opt             nat64_opt;
 
     /**
+     * Specify whether IPv6 should be used for SIP signalling.
+     *
+     * Default: PJSUA_IPV6_ENABLED_NO_PREFERENCE
+     * (IP version used will be based on the address resolution
+     * returned by OS/resolver)
+     */
+    pjsua_ipv6_use              ipv6_sip_use;
+
+    /**
      * Specify whether IPv6 should be used on media.
+     *
+     * Default: PJSUA_IPV6_ENABLED_PREFER_IPV4
+     * (Dual stack media, capable to use IPv4/IPv6.
+     * Outgoing offer will prefer to use IPv4)
      */
     pjsua_ipv6_use              ipv6_media_use;
 
@@ -6181,6 +6311,27 @@ PJ_DECL(pj_status_t) pjsua_call_set_vid_strm (
                                 pjsua_call_id call_id,
                                 pjsua_call_vid_strm_op op,
                                 const pjsua_call_vid_strm_op_param *param);
+
+
+/**
+ * Modify the video stream's codec parameter after the codec is opened.
+ * Note that not all codec backends support modifying parameters during
+ * runtime and only certain parameters can be changed.
+ *
+ * Currently, only Video Toolbox and OpenH264 backends support runtime
+ * adjustment of encoding bitrate (avg_bps and max_bps).
+ *
+ * @param call_id       Call identification.
+ * @param med_idx       Video stream index.
+ * @param param         The new codec parameter.
+ *
+ * @return              PJ_SUCCESS on success.
+ */
+PJ_DECL(pj_status_t)
+pjsua_call_vid_stream_modify_codec_param(pjsua_call_id call_id,
+                                         int med_idx,
+                                         const pjmedia_vid_codec_param *param);
+
 
 /**
  * Modify the audio stream's codec parameter after the codec is opened.

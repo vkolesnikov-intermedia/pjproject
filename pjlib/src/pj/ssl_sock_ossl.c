@@ -36,7 +36,7 @@
 #if defined(PJ_HAS_SSL_SOCK) && PJ_HAS_SSL_SOCK != 0 && \
     (PJ_SSL_SOCK_IMP == PJ_SSL_SOCK_IMP_OPENSSL)
 
-#include "ssl_sock_imp_common.c"
+#include "ssl_sock_imp_common.h"
 
 #define THIS_FILE               "ssl_sock_ossl.c"
 
@@ -163,16 +163,27 @@ static void update_certs_info(pj_ssl_sock_t* ssock,
 #  define OPENSSL_NO_SSL2           /* seems to be removed in 1.1.0 */
 #  define M_ASN1_STRING_data(x)     ASN1_STRING_get0_data(x)
 #  define M_ASN1_STRING_length(x)   ASN1_STRING_length(x)
-#  if defined(OPENSSL_API_COMPAT) && OPENSSL_API_COMPAT >= 0x10100000L
+#  if defined(OPENSSL_API_COMPAT) && OPENSSL_API_COMPAT >= 0x10100000L || \
+      defined(OPENSSL_NO_DEPRECATED)
+
 #     define X509_get_notBefore(x)  X509_get0_notBefore(x)
 #     define X509_get_notAfter(x)   X509_get0_notAfter(x)
+
+#    if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#      if defined(OPENSSL_API_COMPAT) && OPENSSL_API_COMPAT >= 0x30000000L || \
+          defined(OPENSSL_NO_DEPRECATED)
+
+#         define SSL_get_peer_certificate(x)     SSL_get1_peer_certificate(x)
+
+#      endif
+#    endif
+
 #  endif
 #elif !USING_LIBRESSL
 #  define SSL_CIPHER_get_id(c)      (c)->id
 #  define SSL_set_session(ssl, s)   (ssl)->session = (s)
 #  define X509_STORE_CTX_get0_cert(ctx) ((ctx)->cert)
 #endif
-
 
 #ifdef _MSC_VER
 #  if OPENSSL_VERSION_NUMBER >= 0x10100000L
@@ -191,7 +202,7 @@ static void update_certs_info(pj_ssl_sock_t* ssock,
 #  ifdef _MSC_VER
 #    define strerror_r(err,buf,len) strerror_s(buf,len,err)
 #  else
-#    define strerror_r(err,buf,len) pj_ansi_strncpy(buf,strerror(err),len)
+#    define strerror_r(err,buf,len) pj_ansi_strxcpy(buf,strerror(err),len)
 #  endif
 #endif
 
@@ -218,6 +229,10 @@ typedef struct ossl_sock_t
     BIO                  *ossl_rbio;
     BIO                  *ossl_wbio;
 } ossl_sock_t;
+
+
+#include "ssl_sock_imp_common.c"
+
 
 /**
  * Mapping from OpenSSL error codes to pjlib error space.
@@ -345,7 +360,7 @@ static void SSLLogErrors(char * action, int ret, int ssl_err, int len,
         break;
     }
     default:
-        PJ_LOG(2,("SSL", "%lu [%s] (%s) ret: %d len: %d",
+        PJ_LOG(2,("SSL", "%d [%s] (%s) ret: %d len: %d",
                   ssl_err, ssl_err_str, action, ret, len));
         break;
     }
@@ -441,7 +456,7 @@ static pj_str_t ssl_strerror(pj_status_t status,
         const char *tmp = NULL;
         tmp = ERR_reason_error_string(ssl_err);
         if (tmp) {
-            pj_ansi_strncpy(buf, tmp, bufsize);
+            pj_ansi_strxcpy(buf, tmp, bufsize);
             errstr = pj_str(buf);
             return errstr;
         }
@@ -678,7 +693,7 @@ static pj_status_t init_openssl(void)
 
     openssl_init_count = 1;
 
-    PJ_LOG(4, (THIS_FILE, "OpenSSL version : %x", OPENSSL_VERSION_NUMBER));
+    PJ_LOG(4, (THIS_FILE, "OpenSSL version : %ld", OPENSSL_VERSION_NUMBER));
     /* Register error subsystem */
     status = pj_register_strerror(PJ_SSL_ERRNO_START, 
                                   PJ_SSL_ERRNO_SPACE_SIZE, 
@@ -935,15 +950,6 @@ static int verify_cb(int preverify_ok, X509_STORE_CTX *x509_ctx)
         goto on_return;
     }
 
-    if (ssock->param.cb.on_verify_cb) {
-        update_certs_info(ssock, x509_ctx, &ssock->local_cert_info, 
-                          &ssock->remote_cert_info, PJ_TRUE);
-        preverify_ok = (*ssock->param.cb.on_verify_cb)(ssock, 
-                                                       ssock->is_server);
-
-        goto on_return;
-    }
-
     /* Store verification status */
     err = X509_STORE_CTX_get_error(x509_ctx);
     switch (err) {
@@ -1012,6 +1018,16 @@ static int verify_cb(int preverify_ok, X509_STORE_CTX *x509_ctx)
     default:
         ssock->verify_status |= PJ_SSL_CERT_EUNKNOWN;
         break;
+    }
+
+    /* Invoke app's verification callback */
+    if (ssock->param.cb.on_verify_cb) {
+        update_certs_info(ssock, x509_ctx, &ssock->local_cert_info,
+                          &ssock->remote_cert_info, PJ_TRUE);
+        preverify_ok = (*ssock->param.cb.on_verify_cb)(ssock,
+                                                       ssock->is_server);
+
+        goto on_return;
     }
 
     /* When verification is not requested just return ok here, however
@@ -1221,6 +1237,12 @@ static pj_status_t init_ossl_ctx(pj_ssl_sock_t *ssock)
                                   "context. Session reuse will not work."));
         }
     }
+
+#ifdef SSL_OP_NO_RENEGOTIATION
+    if (!ssock->param.enable_renegotiation) {
+        ssl_opt |= SSL_OP_NO_RENEGOTIATION;
+    }
+#endif
 
     if (ssl_opt)
         SSL_CTX_set_options(ctx, ssl_opt);
@@ -1454,7 +1476,7 @@ static pj_status_t init_ossl_ctx(pj_ssl_sock_t *ssock)
             int i;
 
             /* Check and load ECC & DSA certificates & private keys */
-            for (i = 0; i < PJ_ARRAY_SIZE(cert_types); ++i) {
+            for (i = 0; i < (int)PJ_ARRAY_SIZE(cert_types); ++i) {
                 int err;
 
                 pj_memcpy(p, cert_types[i], CERT_TYPE_LEN);
@@ -2350,6 +2372,10 @@ static pj_status_t ssl_do_handshake(pj_ssl_sock_t *ssock)
 
     /* Perform SSL handshake */
     pj_lock_acquire(ssock->write_mutex);
+
+    /* Clear the error queue prior to any I/O functions, as per openssl docs */
+    ERR_clear_error();
+
     err = SSL_do_handshake(ossock->ossl_ssl);
     pj_lock_release(ssock->write_mutex);
 
@@ -2386,14 +2412,14 @@ static pj_status_t ssl_do_handshake(pj_ssl_sock_t *ssock)
 
 #if OPENSSL_VERSION_NUMBER >= 0x1010100fL
             PJ_LOG(5, (THIS_FILE, "Session info: reused=%d, resumable=%d, "
-                       "timeout=%d",
-                       SSL_session_reused(ossock->ossl_ssl),
+                       "timeout=%ld",
+                       (int)SSL_session_reused(ossock->ossl_ssl),
                        SSL_SESSION_is_resumable(sess),
                        SSL_SESSION_get_timeout(sess)));
 #else
             PJ_LOG(5, (THIS_FILE, "Session info: reused=%d, resumable=%d, "
-                       "timeout=%d",
-                       SSL_session_reused(ossock->ossl_ssl),
+                       "timeout=%ld",
+                       (int)SSL_session_reused(ossock->ossl_ssl),
                        -1,
                        SSL_SESSION_get_timeout(sess)));
 #endif
@@ -2402,14 +2428,14 @@ static pj_status_t ssl_do_handshake(pj_ssl_sock_t *ssock)
             len *= 2;
             if (len >= BUF_SIZE) len = BUF_SIZE;
             for (i = 0; i < len; i+=2)
-                pj_ansi_sprintf(buf+i, "%02X", sid[i/2]);
+                pj_ansi_snprintf(buf+i, sizeof(buf)-i, "%02X", sid[i/2]);
             buf[len] = '\0';
             PJ_LOG(5, (THIS_FILE, "Session id: %s", buf));
 
             sctx = SSL_SESSION_get0_id_context(sess, &len);
             if (len >= BUF_SIZE) len = BUF_SIZE;
             for (i = 0; i < len; i++)
-                pj_ansi_sprintf(buf + i, "%d", sctx[i]);
+                pj_ansi_snprintf(buf + i, sizeof(buf)-i, "%d", sctx[i]);
             buf[len] = '\0';
             PJ_LOG(5, (THIS_FILE, "Session id context: %s", buf));
         }
@@ -2433,6 +2459,10 @@ static pj_status_t ssl_read(pj_ssl_sock_t *ssock, void *data, int *size)
      * is on progress, so let's protect it with write mutex.
      */
     pj_lock_acquire(ssock->write_mutex);
+
+    /* Clear the error queue prior to any I/O functions, as per openssl docs */
+    ERR_clear_error();
+
     *size = size_ = SSL_read(ossock->ossl_ssl, data, size_);
 
     if (size_ <= 0) {
@@ -2483,6 +2513,9 @@ static pj_status_t ssl_write(pj_ssl_sock_t *ssock, const void *data,
     ossl_sock_t *ossock = (ossl_sock_t *)ssock;
     pj_status_t status = PJ_SUCCESS;
 
+    /* Clear the error queue prior to any I/O functions, as per openssl docs */
+    ERR_clear_error();
+
     *nwritten = SSL_write(ossock->ossl_ssl, data, (int)size);
     if (*nwritten <= 0) {
         /* SSL failed to process the data, it may just that re-negotiation
@@ -2516,6 +2549,9 @@ static pj_status_t ssl_renegotiate(pj_ssl_sock_t *ssock)
 
     if (SSL_renegotiate_pending(ossock->ossl_ssl))
         return PJ_EPENDING;
+
+    /* Clear the error queue prior to any I/O functions, as per openssl docs */
+    ERR_clear_error();
 
     ret = SSL_renegotiate(ossock->ossl_ssl);
     if (ret <= 0) {

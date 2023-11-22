@@ -47,14 +47,14 @@
  * Initial memory block for media endpoint.
  */
 #ifndef PJMEDIA_POOL_LEN_ENDPT
-#   define PJMEDIA_POOL_LEN_ENDPT               512
+#   define PJMEDIA_POOL_LEN_ENDPT               8000
 #endif
 
 /**
  * Memory increment for media endpoint.
  */
 #ifndef PJMEDIA_POOL_INC_ENDPT
-#   define PJMEDIA_POOL_INC_ENDPT               512
+#   define PJMEDIA_POOL_INC_ENDPT               4000
 #endif
 
 /**
@@ -369,15 +369,17 @@
  * Sample rate conversion backends.
  * Select one of these backends in PJMEDIA_RESAMPLE_IMP.
  */
-#define PJMEDIA_RESAMPLE_NONE               1   /**< No resampling.         */
-#define PJMEDIA_RESAMPLE_LIBRESAMPLE        2   /**< Sample rate conversion 
-                                                     using libresample.  */
-#define PJMEDIA_RESAMPLE_SPEEX              3   /**< Sample rate conversion 
-                                                     using Speex. */
-#define PJMEDIA_RESAMPLE_LIBSAMPLERATE      4   /**< Sample rate conversion 
-                                                     using libsamplerate 
-                                                     (a.k.a Secret Rabbit Code)
-                                                 */
+/** No resampling */
+#define PJMEDIA_RESAMPLE_NONE               1
+
+/** Sample rate conversion using libresample */
+#define PJMEDIA_RESAMPLE_LIBRESAMPLE        2
+
+/** Sample rate conversion using Speex */
+#define PJMEDIA_RESAMPLE_SPEEX              3
+
+/** Sample rate conversion using libsamplerate (a.k.a Secret Rabbit Code) */
+#define PJMEDIA_RESAMPLE_LIBSAMPLERATE      4
 
 /**
  * Select which resample implementation to use. Currently pjmedia supports:
@@ -440,6 +442,9 @@
 /**
  * DTMF/telephone-event duration, in timestamp. To specify the duration in
  * milliseconds, use the setting PJMEDIA_DTMF_DURATION_MSEC instead.
+ *
+ * Note that for a clockrate of 8 KHz, a dtmf duration of 1600 timestamp
+ * units (the default value of PJMEDIA_DTMF_DURATION) is equivalent to 200 ms. 
  */
 #ifndef PJMEDIA_DTMF_DURATION           
 #  define PJMEDIA_DTMF_DURATION                 1600    /* in timestamp */
@@ -449,12 +454,9 @@
 /**
  * DTMF/telephone-event duration, in milliseconds. If the value is greater
  * than zero, than this setting will be used instead of PJMEDIA_DTMF_DURATION.
- *
- * Note that for a clockrate of 8 KHz, a dtmf duration of 1600 timestamp
- * units (the default value of PJMEDIA_DTMF_DURATION) is equivalent to 200 ms. 
  */
 #ifndef PJMEDIA_DTMF_DURATION_MSEC              
-#  define PJMEDIA_DTMF_DURATION_MSEC            0
+#  define PJMEDIA_DTMF_DURATION_MSEC            200
 #endif
 
 
@@ -808,6 +810,22 @@
 #   define PJMEDIA_SDP_NEG_ANSWER_SYMMETRIC_PT          1
 #endif
 
+/**
+ * The SDP negotiator will maintain that the mapping from a particular
+ * dynamic payload type number to a particular codec does not change,
+ * as mandated by RFC 3264 section 8.3.2.
+ * By default, the mapping is maintained for local endpoint only, i.e.
+ * it only takes into account local offer and local answer.
+ * Enable this if application wishes to maintain PT->codec mapping for
+ * remote endpoint as well, i.e. to update the mapping based on remote
+ * offer and answer too.
+ *
+ * Default is 0 (no)
+ */
+#ifndef PJMEDIA_SDP_NEG_MAINTAIN_REMOTE_PT_MAP
+#   define PJMEDIA_SDP_NEG_MAINTAIN_REMOTE_PT_MAP       0
+#endif
+
 
 /**
  * This specifies if the SDP negotiator should compare its content before 
@@ -817,9 +835,18 @@
  * compatibility and performance this is set to 0.
  *
  * Default is 0 (No)
+ * 
+ * This macro has been deprecated in version 2.14.
+ * See https://github.com/pjsip/pjproject/pull/3322 for more info.
  */
-#ifndef PJMEDIA_SDP_NEG_COMPARE_BEFORE_INC_VERSION
-#   define PJMEDIA_SDP_NEG_COMPARE_BEFORE_INC_VERSION   0
+#ifdef PJMEDIA_SDP_NEG_COMPARE_BEFORE_INC_VERSION
+#   ifdef _MSC_VER
+#       pragma message("Warning: PJMEDIA_SDP_NEG_COMPARE_BEFORE_INC_VERSION macro is"\
+                       " deprecated and has no effect")
+#   else
+#       warning "PJMEDIA_SDP_NEG_COMPARE_BEFORE_INC_VERSION macro is deprecated"\
+                " and has no effect"
+#   endif
 #endif
 
 

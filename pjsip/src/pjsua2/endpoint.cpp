@@ -43,8 +43,12 @@ Endpoint *Endpoint::instance_;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TlsInfo::TlsInfo() : cipher(PJ_TLS_UNKNOWN_CIPHER),
-                     empty(true)
+TlsInfo::TlsInfo() 
+: established(false),
+  protocol(0),
+  cipher(PJ_TLS_UNKNOWN_CIPHER),
+  verifyStatus(0),
+  empty(true)
 {
 }
 
@@ -97,7 +101,9 @@ void TlsInfo::fromPj(const pjsip_tls_state_info &info)
 }
 
 SslCertInfo::SslCertInfo()
-        : empty(true)
+: version(0xFF),
+  validityGmt(false),
+  empty(true)
 {
 }
 
@@ -592,6 +598,9 @@ mainThread(NULL), pendingJobSize(0)
         PJSUA2_RAISE_ERROR(PJ_EEXISTS);
     }
 
+    audioDevMgr = new AudDevManager();
+    videoDevMgr = new VidDevManager();
+
     instance_ = this;
 }
 
@@ -614,6 +623,9 @@ Endpoint::~Endpoint()
     clearCodecInfoList(codecInfoList);
     clearCodecInfoList(videoCodecInfoList);
 #endif
+
+    delete audioDevMgr;
+    delete videoDevMgr;
 
     try {
         libDestroy();
@@ -761,7 +773,11 @@ void Endpoint::on_timer(pj_timer_heap_t *timer_heap,
     if (ut->signature != TIMER_SIGNATURE)
         return;
 
+    /* Best effort to handle race condition with utilTimerCancel() */
+    ut->signature = 0xFFFFFFFE;
+
     ep.onTimer(ut->prm);
+    delete ut;
 }
 
 void Endpoint::on_nat_detect(const pj_stun_nat_detect_result *res)
@@ -795,7 +811,7 @@ void Endpoint::on_transport_state( pjsip_transport *tp,
     prm.lastError = info ? info->status : PJ_SUCCESS;
 
 #if defined(PJSIP_HAS_TLS_TRANSPORT) && PJSIP_HAS_TLS_TRANSPORT!=0
-    if (!pj_ansi_stricmp(tp->type_name, "tls") && info->ext_info &&
+    if (!pj_ansi_stricmp(tp->type_name, "tls") && info && info->ext_info &&
         (state == PJSIP_TP_STATE_CONNECTED || 
          ((pjsip_tls_state_info*)info->ext_info)->
                                  ssl_sock_info->verify_status != PJ_SUCCESS))
@@ -1228,6 +1244,7 @@ void Endpoint::on_stream_precreate(pjsua_call_id call_id,
         param->stream_info.info.aud.use_ka = prm.streamInfo.useKa;
 #endif
         param->stream_info.info.aud.rtcp_sdes_bye_disabled = prm.streamInfo.rtcpSdesByeDisabled;
+        param->stream_info.info.aud.rx_event_pt = prm.streamInfo.audRxEventPt;
     } else if (param->stream_info.type == PJMEDIA_TYPE_VIDEO) {
         param->stream_info.info.vid.jb_init = prm.streamInfo.jbInit;
         param->stream_info.info.vid.jb_min_pre = prm.streamInfo.jbMinPre;
@@ -1631,7 +1648,7 @@ pjsip_redirect_op Endpoint::on_call_redirected(pjsua_call_id call_id,
     int len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, target, uristr,
                               sizeof(uristr));
     if (len < 1) {
-        pj_ansi_strcpy(uristr, "--URI too long--");
+        pj_ansi_strxcpy(uristr, "--URI too long--", sizeof(uristr));
     }
     prm.targetUri = string(uristr);
     if (e)
@@ -1950,6 +1967,7 @@ void Endpoint::libInit(const EpConfig &prmEpConfig) PJSUA2_THROW(Error)
     ua_cfg.cb.on_create_media_transport = &Endpoint::on_create_media_transport;
     ua_cfg.cb.on_stun_resolution_complete = 
         &Endpoint::stun_resolve_cb;
+    ua_cfg.cb.on_rejected_incoming_call = &Endpoint::on_rejected_incoming_call;
 
     /* Init! */
     PJSUA2_CHECK_EXPR( pjsua_init(&ua_cfg, &log_cfg, &med_cfg) );
@@ -2405,12 +2423,12 @@ bool Endpoint::mediaExists(const AudioMedia &media) const
 
 AudDevManager &Endpoint::audDevManager()
 {
-    return audioDevMgr;
+    return *audioDevMgr;
 }
 
 VidDevManager &Endpoint::vidDevManager()
 {
-    return videoDevMgr;
+    return *videoDevMgr;
 }
 
 /*
@@ -2674,4 +2692,19 @@ pj_status_t Endpoint::on_auth_create_aka_response_callback(pj_pool_t *pool,
     }
 #endif
     return status;
+}
+
+void Endpoint::on_rejected_incoming_call(
+                            const pjsua_on_rejected_incoming_call_param *param)
+{
+    OnRejectedIncomingCallParam prm;
+    prm.callId = param->call_id;
+    prm.localInfo = pj2Str(param->local_info);
+    prm.remoteInfo = pj2Str(param->remote_info);
+    prm.statusCode = param->st_code;
+    prm.reason = pj2Str(param->st_text);
+    if (param->rdata)
+        prm.rdata.fromPj(*param->rdata);
+
+    Endpoint::instance().onRejectedIncomingCall(prm);
 }

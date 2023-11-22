@@ -207,6 +207,7 @@ pjsip_tls_setting TlsConfig::toPj() const
     ts.qos_type         = this->qosType;
     ts.qos_params       = this->qosParams;
     ts.qos_ignore_error = this->qosIgnoreError;
+    ts.enable_renegotiation = this->enableRenegotiation;
 
     return ts;
 }
@@ -232,6 +233,7 @@ void TlsConfig::fromPj(const pjsip_tls_setting &prm)
     this->qosType       = prm.qos_type;
     this->qosParams     = prm.qos_params;
     this->qosIgnoreError = PJ2BOOL(prm.qos_ignore_error);
+    this->enableRenegotiation = PJ2BOOL(prm.enable_renegotiation);
 }
 
 void TlsConfig::readObject(const ContainerNode &node) PJSUA2_THROW(Error)
@@ -407,6 +409,15 @@ pjsip_media_type SipMediaType::toPj() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+SipHeader::SipHeader()
+{
+    pj_str_t dummy;
+
+    // Init pjHdr with null string to suppress warning
+    pj_bzero(&dummy, sizeof(dummy));
+    pjsip_generic_string_hdr_init2(&pjHdr, &dummy, &dummy);
+}
+
 void SipHeader::fromPj(const pjsip_hdr *hdr) PJSUA2_THROW(Error)
 {
     char *buf = NULL;
@@ -464,6 +475,13 @@ pjsip_generic_string_hdr &SipHeader::toPj() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+SipMultipartPart::SipMultipartPart()
+{
+    pj_bzero(&pjMpp, sizeof(pjMpp));
+    pj_bzero(&pjMsgBody, sizeof(pjMsgBody));
+    pj_list_init(&pjMpp.hdr);
+}
+
 void SipMultipartPart::fromPj(const pjsip_multipart_part &prm)
                               PJSUA2_THROW(Error)
 {
@@ -481,6 +499,10 @@ void SipMultipartPart::fromPj(const pjsip_multipart_part &prm)
     
     contentType.fromPj(prm.body->content_type);
     body = string((char*)prm.body->data, prm.body->len);
+
+    pj_list_init(&pjMpp.hdr);
+    pjMpp.body = NULL;
+    pj_bzero(&pjMsgBody, sizeof(pjMsgBody));
 }
 
 pjsip_multipart_part& SipMultipartPart::toPj() const
@@ -600,14 +622,16 @@ TsxStateEvent::TsxStateEvent()
 
 bool SipTxOption::isEmpty() const
 {
-    return (targetUri == "" && headers.size() == 0 && contentType == "" &&
-            msgBody == "" && multipartContentType.type == "" &&
+    return (targetUri == "" && localUri == "" &&  headers.size() == 0 &&
+            contentType == "" && msgBody == "" && multipartContentType.type == "" &&
             multipartContentType.subType == "" && multipartParts.size() == 0);
 }
 
 void SipTxOption::fromPj(const pjsua_msg_data &prm) PJSUA2_THROW(Error)
 {
     targetUri = pj2Str(prm.target_uri);
+
+    localUri = pj2Str(prm.local_uri);
 
     headers.clear();
     pjsip_hdr* pj_hdr = prm.hdr_list.next;
@@ -639,6 +663,8 @@ void SipTxOption::toPj(pjsua_msg_data &msg_data) const
     pjsua_msg_data_init(&msg_data);
 
     msg_data.target_uri = str2Pj(targetUri);
+
+    msg_data.local_uri = str2Pj(localUri);
 
     pj_list_init(&msg_data.hdr_list);
     for (i = 0; i < headers.size(); i++) {
