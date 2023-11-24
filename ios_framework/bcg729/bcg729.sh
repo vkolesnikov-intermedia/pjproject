@@ -51,37 +51,87 @@ else
     echo "Using bcg729-${VERSION}.tar.gz"
 fi
 
-mkdir -p "${CURRENTPATH}/src/logs"
-mkdir -p "${CURRENTPATH}/build"
+ARCH=$1
+SDK=$2
+SOURCE_DIR="${CURRENTPATH}/src/bcg729-${VERSION}"
+BUILD_DIR="${CURRENTPATH}/bin"
+DESTINATION_DIR="${CURRENTPATH}/build"
+DESTINATION_LIB_DIR="$DESTINATION_DIR/lib"
+DESTINATION_HEADERS_DIR="$DESTINATION_DIR/include/bcg729"
 
-tar zxf bcg729-${VERSION}.tar.gz -C "${CURRENTPATH}/src"
-cd "${CURRENTPATH}/src/bcg729-${VERSION}"
+# List of all available platforms: https://github.com/leetal/ios-cmake/blob/master/README.md
+if [[ "${SDK}" == "iphonesimulator" ]]; then
+    if [[ "${ARCH}" == "arm64" ]]; then
+        PLATFORM="SIMULATORARM64"
+    else
+        PLATFORM="SIMULATOR64"
+    fi
+else
+    PLATFORM="OS64"
+fi
 
-CONF_LOG="${CURRENTPATH}/src/logs/conf-BCG729-${VERSION}.log"
-BUILD_LOG="${CURRENTPATH}/src/logs/build-BCG729-${VERSION}.log"
-INSTALL_LOG="${CURRENTPATH}/src/logs/install-BCG729-${VERSION}.log"
+INSTALL_DIR="$BUILD_DIR/$PLATFORM.sdk"
+CONF_LOG="$INSTALL_DIR/logs/conf-BCG729-${VERSION}.log"
+BUILD_LOG="$INSTALL_DIR/logs/build-BCG729-${VERSION}.log"
+INSTALL_LOG="$INSTALL_DIR/logs/install-BCG729-${VERSION}.log"
 
-echo "Configurating bcg729-${VERSION} ..."
-cmake . -G Xcode \
-    -DPLATFORM=OS64COMBINED \
-    -DDEPLOYMENT_TARGET=${MIN_IOS_VERSION} \
-    -DCMAKE_TOOLCHAIN_FILE="${CURRENTPATH}/ios.toolchain.cmake" \
-    -DCMAKE_INSTALL_PREFIX="${CURRENTPATH}/build" \
-    -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
-    -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=NO \
-    -DENABLE_BITCODE=0 \
-     > "${CONF_LOG}" 2>&1
+_build() {
+    rm -rf $INSTALL_DIR
+    mkdir -p $INSTALL_DIR/logs 
 
-echo "Building bcg729-${VERSION} ..."
+    echo "Configurating bcg729-${VERSION} for sdk: $SDK arch: $ARCH platform: $PLATFORM ..."
+    echo Xcode path: $DEVELOPER
+    
+    cmake . -G Xcode \
+        -DPLATFORM=$PLATFORM \
+        -DDEPLOYMENT_TARGET=${MIN_IOS_VERSION} \
+        -DCMAKE_TOOLCHAIN_FILE="${CURRENTPATH}/ios.toolchain.cmake" \
+        -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
+        -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
+        -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=NO \
+        -DENABLE_BITCODE=0 \
+        > "${CONF_LOG}" 2>&1
 
-cmake --build . --config Release > "${BUILD_LOG}" 2>&1
+    echo "Building bcg729-${VERSION} ..."
 
-echo "Installing bcg729-${VERSION} ..."
-cmake --install . --config Release > "${INSTALL_LOG}" 2>&1
+    cmake --build . --config Release > "${BUILD_LOG}" 2>&1
 
-lipo -info ${CURRENTPATH}/build/lib/libbcg729.a
+    echo "Installing bcg729-${VERSION} ..."
+    cmake --install . --config Release > "${INSTALL_LOG}" 2>&1
 
-rm ${CURRENTPATH}/build/lib/*.dylib
-rm -rf ${CURRENTPATH}/build/lib/pkgconfig
-rm -rf ${CURRENTPATH}/src/bcg729-${VERSION}
+    rm $INSTALL_DIR/lib/*.dylib
+    rm -rf $INSTALL_DIR/lib/pkgconfig
+}
+
+_copy_to_destination() {
+    cp $INSTALL_DIR/lib/*.a $DESTINATION_LIB_DIR
+    cp $INSTALL_DIR/include/bcg729/*.h $DESTINATION_HEADERS_DIR
+}
+
+rm -rf $DESTINATION_DIR
+mkdir -p $DESTINATION_LIB_DIR
+mkdir -p $DESTINATION_HEADERS_DIR
+
+if [ -z $DEV_MODE ] || [ ! -d "$INSTALL_DIR" ];
+then
+    echo "Unpacking BCG729"
+    rm -rf $SOURCE_DIR
+    mkdir -p $SOURCE_DIR 
+    tar zxf bcg729-${VERSION}.tar.gz -C "${CURRENTPATH}/src"
+    cd $SOURCE_DIR
+
+    echo "Building BCG729 ${VERSION} for $PLATFORM"
+    _build
+    _copy_to_destination
+    echo "Building done."
+else
+    echo DEV mode is enabled and BCG729 library for $SDK and $ARCH already built. Reusing it.
+    _copy_to_destination 
+fi
+
+
+
+
+
+
 

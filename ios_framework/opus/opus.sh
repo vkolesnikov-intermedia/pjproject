@@ -27,7 +27,6 @@ OPUS_CONFIGURE_OPTIONS="--enable-float-approx \
                         --disable-doc"
 
 CURRENTPATH=`pwd`
-ARCHS="x86_64 arm64 arm64e" # when min vers is iOS10 -> i386 armv7 armv7s
 DEVELOPER=`xcode-select -print-path`
 
 if [ ! -d "$DEVELOPER" ]; then
@@ -53,25 +52,8 @@ case $CURRENTPATH in
     ;;
 esac
 
-packLibrary()
-{
-    LIBRARY=$1
-
-        # for iOS <= 10
-        #"${CURRENTPATH}/bin/iPhoneSimulator-i386.sdk/lib/lib${LIBRARY}.a" \
-        #"${CURRENTPATH}/bin/iPhoneOS-armv7.sdk/lib/lib${LIBRARY}.a" \
-        #"${CURRENTPATH}/bin/iPhoneOS-armv7s.sdk/lib/lib${LIBRARY}.a" \
-
-    lipo \
-        "${CURRENTPATH}/bin/iPhoneSimulator-x86_64.sdk/lib/lib${LIBRARY}.a" \
-        "${CURRENTPATH}/bin/iPhoneOS-arm64.sdk/lib/lib${LIBRARY}.a" \
-        "${CURRENTPATH}/bin/iPhoneOS-arm64e.sdk/lib/lib${LIBRARY}.a" \
-        -create -output ${CURRENTPATH}/build/lib/lib${LIBRARY}.a
-
-    lipo -info ${CURRENTPATH}/build/lib/lib${LIBRARY}.a
-}
-
 set -e
+
 if [ ! -e opus-${VERSION}.tar.gz ]; then
     echo "Downloading opus-${VERSION}.tar.gz"
     curl -O -L -s https://archive.mozilla.org/pub/opus/opus-${VERSION}.tar.gz
@@ -79,51 +61,53 @@ else
     echo "Using opus-${VERSION}.tar.gz"
 fi
 
-mkdir -p "${CURRENTPATH}/src"
-mkdir -p "${CURRENTPATH}/bin"
-mkdir -p "${CURRENTPATH}/build/lib"
+ARCH=$1
+SDK=$2
+BUILD_DIR="${CURRENTPATH}/bin"
+SOURCE_DIR="${CURRENTPATH}/src"
+DESTINATION_DIR="${CURRENTPATH}/build"
+DESTINATION_LIB_DIR="$DESTINATION_DIR/lib"
+DESTINATION_HEADERS_DIR="$DESTINATION_DIR/include/opus"
 
-tar zxf opus-${VERSION}.tar.gz -C "${CURRENTPATH}/src"
-cd "${CURRENTPATH}/src/opus-${VERSION}"
+if [[ "${ARCH}" == "x86_64" ]];
+then
+    HOST=x86_64-apple-darwin
+else 
+    HOST=arm-apple-darwin 
+fi
 
+if [[ "${SDK}" == "iphonesimulator" ]];
+then
+    PLATFORM="iPhoneSimulator"
+    ios_version_flag="-mios-simulator-version-min=$MIN_IOS_VERSION"
+else 
+    PLATFORM="iPhoneOS"
+    ios_version_flag="-miphoneos-version-min=$MIN_IOS_VERSION"
+fi
 
-for ARCH in ${ARCHS}
-do
-    if [[ "${ARCH}" == "i386" || "${ARCH}" == "x86_64" ]];
-    then
-        PLATFORM="iPhoneSimulator"
-        if [ "${ARCH}" == "x86_64" ]
-        then
-            HOST=x86_64-apple-darwin
-        else
-            HOST=i386-apple-darwin
-        fi
-    else
-        PLATFORM="iPhoneOS"
-        HOST=arm-apple-darwin
-    fi
+INSTALL_DIR="$BUILD_DIR/${PLATFORM}-${ARCH}.sdk"
 
-    export CROSS_TOP="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
+_build() {
+    rm -rf $INSTALL_DIR 
+    mkdir -p $INSTALL_DIR 
+
+    export CROSS_TOP=`xcrun -sdk $SDK --show-sdk-platform-path`/Developer
     export CROSS_SDK="${PLATFORM}.sdk"
     export BUILD_TOOLS="${DEVELOPER}"
 
-    echo "Building opus-${VERSION} for ${PLATFORM}  ${ARCH}"
+    echo "Building opus-${VERSION} for ${PLATFORM} ${ARCH}"
+    echo Toolchain: $CROSS_TOP
     echo "Please stand by..."
 
-    mkdir -p "${CURRENTPATH}/bin/${PLATFORM}-${ARCH}.sdk"
-    LOG="${CURRENTPATH}/bin/${PLATFORM}-${ARCH}.sdk/build-opus-${VERSION}.log"
+    mkdir -p $INSTALL_DIR
+    LOG="$INSTALL_DIR/build-opus-${VERSION}.log"
 
-    XCRUN_SDK=`echo $PLATFORM | tr '[:upper:]' '[:lower:]'`
-    export CC="xcrun -sdk ${XCRUN_SDK} clang -mios-version-min=${MIN_IOS_VERSION} -arch ${ARCH}"
+    export CC="xcrun -sdk ${SDK} clang $ios_version_flag -arch ${ARCH}"
     CFLAGS="-arch ${ARCH} -D__OPTIMIZE__ -fembed-bitcode"
 
     set +e
-    INSTALL_DIR="${CURRENTPATH}/bin/${PLATFORM}-${ARCH}.sdk"
-    if [[ "$VERSION" =~ 1.0.0. ]]; then
-        ./configure BSD-generic32 ${OPUS_CONFIGURE_OPTIONS} --prefix="${INSTALL_DIR}" > "${LOG}" 2>&1
-    else
-        ./configure --host=${HOST} ${OPUS_CONFIGURE_OPTIONS} --prefix="${INSTALL_DIR}" CFLAGS="${CFLAGS}" > "${LOG}" 2>&1
-    fi
+
+    ./configure --host=${HOST} ${OPUS_CONFIGURE_OPTIONS} --prefix="${INSTALL_DIR}" CFLAGS="${CFLAGS}" > "${LOG}" 2>&1
 
     if [ $? != 0 ];
     then
@@ -132,7 +116,7 @@ do
     fi
 
     # add -isysroot to CC=
-    sed -ie "s!^CFLAG=!CFLAG=-isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} -miphoneos-version-min=${MIN_IOS_VERSION} !" "Makefile"
+    sed -ie "s!^CFLAG=!CFLAG=-isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} $ios_version_flag !" "Makefile"
 
     if [ "$1" == "verbose" ];
     then
@@ -150,14 +134,29 @@ do
     set -e
     make install >> "${LOG}" 2>&1
     make clean >> "${LOG}" 2>&1
-done
+}
 
-echo "  Copying headers and libraries"
-mkdir -p ${CURRENTPATH}/build/include
-cp -R ${CURRENTPATH}/bin/iPhoneSimulator-x86_64.sdk/include/opus ${CURRENTPATH}/build/include/
+_copy_to_destination() {
+    cp $INSTALL_DIR/lib/*.a $DESTINATION_LIB_DIR
+    cp $INSTALL_DIR/include/opus/*.h $DESTINATION_HEADERS_DIR
+}
 
-packLibrary "opus"
+rm -rf $DESTINATION_DIR
+mkdir -p $DESTINATION_LIB_DIR
+mkdir -p $DESTINATION_HEADERS_DIR
 
-cd ${CURRENTPATH}
+if [ -z $DEV_MODE ] || [ ! -d "$INSTALL_DIR" ];
+then
+    echo Unpacking Opus
+    rm -rf $SOURCE_DIR
+    mkdir -p $SOURCE_DIR 
+    tar zxf opus-${VERSION}.tar.gz -C "$SOURCE_DIR"
+    cd "$SOURCE_DIR/opus-${VERSION}"
 
-echo "Building done."
+    _build
+    _copy_to_destination
+    echo "Building done."
+else
+    echo DEV mode is enabled and OPUS library for $SDK and $ARCH already built. Reusing it.
+    _copy_to_destination 
+fi

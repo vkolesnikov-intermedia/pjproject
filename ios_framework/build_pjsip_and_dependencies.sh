@@ -16,6 +16,14 @@ case $i in
     source_dir="${i#*=}"
     shift
     ;;
+    --arch=*)
+    arch="${i#*=}"
+    shift
+    ;;
+    --sdk=*)
+    sdk="${i#*=}"
+    shift
+    ;;
     --bcg729=*)
     bcg729_dir="${i#*=}"
     shift
@@ -26,10 +34,6 @@ case $i in
     ;;
     --opus=*)
     opus_dir="${i#*=}"
-    shift
-    ;;
-    --config-site=*)
-    config_site="${i#*=}"
     shift
     ;;
     *)
@@ -47,17 +51,13 @@ function check_or_exit() {
 check_or_exit "minimum iOS version using --min-ios-version" $min_ios_version
 check_or_exit "output directory using --output-dir" $output_dir
 check_or_exit "source directory using --source-dir" $source_dir
+check_or_exit "arch (x86_64, arm64) using --arch" $arch
+check_or_exit "sdk (iphoneos, iphonesimulator) using --sdk" $sdk
 check_or_exit "source BCG729 directory using --bcg729" $bcg729_dir
 check_or_exit "source OpenSSL directory using --openssl" $openssl_dir
 check_or_exit "source Opus directory using --opus" $opus_dir
-check_or_exit "config site using --config-site" $config_site
 
 export MIN_IOS_VERSION=$min_ios_version
-BUILD_ARCHS=(
-    "arm64"
-    "arm64e"
-    "x86_64"
-)
 PJSIP_LIB_PATHS=(
     "pjlib/lib"
     "pjlib-util/lib"
@@ -66,56 +66,31 @@ PJSIP_LIB_PATHS=(
     "pjsip/lib"
     "third_party/lib"
 )
-BUILD_DIR="$PWD/tmp"
 
 function build_dependency() {
-    if [ -z $DEV_MODE ] || [ ! -d "$1/build" ]; then
-        echo "Building $1"
-        cd $2
-        sh "$1.sh"
-        echo "$1 build completed."
-    fi
+    current_dir=$PWD
+    echo "Building $1 for arch: $2 and sdk: $3"
+    cd $4
+    sh "./$1.sh" $2 $3
+    cp -r $4/build/lib/* $output_dir
+    echo "$1 build completed."
+    cd $current_dir
 }
 
-function build_archs () {
-    echo "Building ABIs"
+function build_arch () {
+    echo "Building ABI for $arch $sdk"
 
-    cp $config_site "$source_dir/pjlib/include/pj"
-    mkdir -p $BUILD_DIR/archs
-
-    for arch in "${BUILD_ARCHS[@]}"; do
-        configure_"$arch"
-        _build $arch
-        _collect $arch
-    done
+    _build
+    _collect
 
     echo "Done building the ABIs"
     echo "============================="
-}
-
-function configure_arm64 () {
-    echo "Configure for arm64"
-    export CFLAGS="-miphoneos-version-min=$min_ios_version"
-    export LDFLAGS=
-}
-
-function configure_arm64e () {
-    echo "Configure for arm64e"
-    export CFLAGS="-miphoneos-version-min=$min_ios_version"
-    export LDFLAGS=
-}
-
-function configure_x86_64 () {
-    echo "Configure for x86_64"
-    export CFLAGS="-O2 -m32 -mios-simulator-version-min=$min_ios_version"
-    export LDFLAGS="-O2 -m32 -mios-simulator-version-min=$min_ios_version"
 }
 
 function _build () {
     pushd . > /dev/null
     cd $source_dir
 
-    arch=$1
     clean_pjsip_libs $arch
 
     configure="./configure-iphone"
@@ -127,9 +102,18 @@ function _build () {
     export CFLAGS="${CFLAGS} -I$openssl_dir/build/include"
     export LDFLAGS="${LDFLAGS} -L$openssl_dir/build/lib -lstdc++"
     export C_INCLUDE_PATH="${C_INCLUDE_PATH} "
-    export DEVPATH=`xcrun -sdk iphonesimulator --show-sdk-platform-path`/Developer
+    export DEVPATH=`xcrun -sdk $sdk --show-sdk-platform-path`/Developer
     export CC=gcc
-    export MIN_IOS="-miphoneos-version-min=$min_ios_version"
+
+    if [ "$sdk" == "iphonesimulator" ]; then
+        echo dev path $DEVPATH
+        export CFLAGS="${CFLAGS} -O2 -m64 -mios-simulator-version-min=$min_ios_version"
+        export LDFLAGS="${LDFLAGS} -O2 -m64 -mios-simulator-version-min=$min_ios_version"
+        export MIN_IOS="-mios-simulator-version-min=$min_ios_version"
+    else
+        export CFLAGS="${CFLAGS} -mios-version-min=$min_ios_version"
+        export MIN_IOS="-mios-version-min=$min_ios_version"
+    fi
 
     echo "Building for $arch"
     echo Run configure command: $configure
@@ -146,50 +130,17 @@ function _build () {
 }
 
 function _collect () {
-    echo "COLLECT for $1"
-    destination_dir="$BUILD_DIR/archs/$1"
+    echo "COLLECT for arch: $arch sdk: $sdk"
+    destination_dir="$output_dir/pjlib"  
+
     mkdir -p $destination_dir
 
-    name_prefix=$1
-
-    if [ "$1" == "arm64e" ]; then
-        name_prefix="arm64"
-    fi
-
-    for x in `find $source_dir -name *${name_prefix}*.a`; do
+    for x in `find $source_dir -name *${arch}*.a`; do
         cp -v $x $destination_dir
     done
 }
 
-function assemble_final_libs () {
-    echo "Assemble pjsip libs ..."
-
-    mkdir -p $output_dir
-    pj_filename="$output_dir/libpjsip-apple-darwin-ios.a"
-
-    # remove pjsua2
-    a_excluded_files=`find $BUILD_DIR/$1 -name libpjsua2*.a -exec printf '%s ' {} +`
-    rm -rf $a_excluded_files
-
-    a_files=`find $BUILD_DIR/archs -name *darwin_ios.a -exec printf '%s ' {} +`
-
-    libtool -o $pj_filename $a_files
-
-    lipo -info $pj_filename
-
-    echo "Copy openssl ..."
-    cp -r $openssl_dir/build/lib/* $output_dir
-
-    echo "Copy opus ..."
-    cp -r $opus_dir/build/lib/* $output_dir
-
-    echo "Copy G729 ..."
-    cp -r $bcg729_dir/build/lib/*.a $output_dir
-}
-
 function clean_pjsip_libs () {
-    arch=$1
-
     echo "Clean $arch lib directory"
 
     for src_dir in ${PJSIP_LIB_PATHS[*]}; do
@@ -205,13 +156,25 @@ function clean_pjsip_libs () {
     done
 }
 
-function cleanup() {
-    rm -rf $BUILD_DIR
+function assemble_final_libs () {
+    echo "Assemble pjsip lib ..."
+
+    pj_filename="$output_dir/libpjsip-apple-darwin-ios.a"
+    pj_lib=$output_dir/pjlib
+
+    # remove pjsua2
+    a_excluded_files=`find $pj_lib -name libpjsua2*.a -exec printf '%s ' {} +`
+    echo Remove exluded files $a_excluded_files
+    rm -rf $a_excluded_files
+
+    a_files=`find $pj_lib -name *darwin_ios.a -exec printf '%s ' {} +`
+    libtool -o $pj_filename $a_files
+
+    rm -rf $pj_lib
 }
 
-build_dependency "openssl" $openssl_dir
-build_dependency "opus" $opus_dir
-build_dependency "bcg729" $bcg729_dir
-build_archs
+build_dependency "bcg729" $arch $sdk $bcg729_dir
+build_dependency "openssl" $arch $sdk $openssl_dir
+build_dependency "opus" $arch $sdk $opus_dir
+build_arch
 assemble_final_libs
-cleanup
