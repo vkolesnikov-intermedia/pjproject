@@ -6,7 +6,7 @@
 ###########################################################################
 #  Change values here                                                     #
 #                                                                         #
-VERSION="1.1.1n"                                                           #  
+VERSION="3.2.0"                                                           #  
 if test "x${MIN_IOS_VERSION}" = "x"; then
   MIN_IOS_VERSION="14.0"
   echo "$F: MIN_IOS_VERSION is not specified, using ${MIN_IOS_VERSION}"
@@ -78,7 +78,7 @@ _build() {
     export CROSS_TOP=`xcrun -sdk $SDK --show-sdk-platform-path`/Developer
     export CROSS_SDK="${PLATFORM}.sdk"
     export BUILD_TOOLS="${DEVELOPER}"
-    export CC="${BUILD_TOOLS}/usr/bin/gcc -fembed-bitcode -arch ${ARCH}"
+    export CC="${BUILD_TOOLS}/usr/bin/gcc -arch ${ARCH}"
 
     BUILD_LOG="${INSTALL_DIR}/build-openssl-${VERSION}.log"
     CONFIG_LOG="${INSTALL_DIR}/config-openssl-${VERSION}.log"
@@ -88,9 +88,9 @@ _build() {
 
     if [ "$SDK" == "iphonesimulator" ];
     then
-        ./Configure iossimulator-xcrun "-arch $ARCH -fembed-bitcode" ${OPENSSL_CONFIGURE_OPTIONS} --prefix="${INSTALL_DIR}" --openssldir="${INSTALL_DIR}" &> "${CONFIG_LOG}"
+        ./Configure iossimulator-xcrun "-arch $ARCH" ${OPENSSL_CONFIGURE_OPTIONS} --prefix="${INSTALL_DIR}" --openssldir="${INSTALL_DIR}" &> "${CONFIG_LOG}"
     else
-        ./Configure iphoneos-cross DSO_LDFLAGS=-fembed-bitcode --prefix="${INSTALL_DIR}" $ios_version_flag ${OPENSSL_CONFIGURE_OPTIONS} --openssldir="${INSTALL_DIR}" &> "${CONFIG_LOG}"
+        ./Configure iphoneos-cross --prefix="${INSTALL_DIR}" $ios_version_flag ${OPENSSL_CONFIGURE_OPTIONS} --openssldir="${INSTALL_DIR}" &> "${CONFIG_LOG}"
     fi
 
     if [ $? != 0 ];
