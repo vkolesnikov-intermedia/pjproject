@@ -1,0 +1,42 @@
+name: Update Master
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Set up upstream
+        run: |
+          if ! git remote | grep -q "upstream"; then
+            git remote add upstream https://github.com/pjsip/pjproject.git
+          fi
+      
+      - name: Fetch upstream
+        run: git fetch upstream
+
+      - name: Configure git
+        run: |
+          git config user.name "CI Bot"
+          git config user.email "noreply@intermedia.com"
+
+      - name: Merge upstream/master into master
+        run: |
+          if git merge --ff-only || git merge -m "Merge upstream/master into master" upstream/master; then
+            curl -X POST --data-urlencode "payload={\"channel\": \"#unite-mobile-pjproject\", \"username\": \"ci-bot\", \"text\": \":azure-check-mark: *Merge upstream/master to master* successful! <https://github.com/intermedia-net/pjproject/actions/workflows/update-master.yml|Click here> for details! \", \"icon_emoji\": \":unite:\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+          else
+            curl -X POST --data-urlencode "payload={\"channel\": \"#unite-mobile-pjproject\", \"username\": \"ci-bot\", \"text\": \":azure-x-mark: *Upstream/master to master merge* conflict detected! <https://github.com/intermedia-net/pjproject/actions/workflows/update-master.yml|Click here> for details! \", \"icon_emoji\": \":unite:\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+            exit 1
+          fi
+
+      - name: Push changes
+        run: git push origin master
