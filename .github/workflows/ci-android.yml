@@ -33,11 +33,13 @@ jobs:
           cd /home
           ./build
       - 
-        name: Create asset 
+        name: Create asset
+        if: always()
         run: |
           tar -czvf "$RELEASE_ARCHIVE_NAME".tar.gz -C output .
       - 
         name: Update release
+        if: always()
         id: update_release
         uses: ncipollo/release-action@v1
         with:
