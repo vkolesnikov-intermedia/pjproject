@@ -31,9 +31,10 @@ jobs:
 
       - name: Merge upstream/master into master
         run: |
-          if git merge --ff-only || git merge -m "Merge upstream/master into master" upstream/master; then
+          if git merge -m "Merge upstream/master into master" upstream/master; then
             curl -X POST --data-urlencode "payload={\"channel\": \"#unite-mobile-pjproject\", \"username\": \"ci-bot\", \"text\": \":azure-check-mark: *Merge upstream/master to master* successful! <https://github.com/intermedia-net/pjproject/actions/workflows/update-master.yml|Click here> for details! \", \"icon_emoji\": \":unite:\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
           else
+            git merge --abort
             curl -X POST --data-urlencode "payload={\"channel\": \"#unite-mobile-pjproject\", \"username\": \"ci-bot\", \"text\": \":azure-x-mark: *Upstream/master to master merge* conflict detected! <https://github.com/intermedia-net/pjproject/actions/workflows/update-master.yml|Click here> for details! \", \"icon_emoji\": \":unite:\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
             exit 1
           fi
