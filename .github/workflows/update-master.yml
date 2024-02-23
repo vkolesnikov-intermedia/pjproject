@@ -44,13 +44,3 @@ jobs:
       - name: Push changes
         if: ${{ success() }}
         run: git push origin master
-
-      - name: Success step
-        if: ${{ success() }}
-        run: |
-          curl -X POST --data-urlencode "payload={\"channel\": \"#unite-mobile-pjproject\", \"username\": \"ci-bot\", \"text\": \":azure-check-mark: *Merge upstream/master to master* successful! <https://github.com/intermedia-net/pjproject/actions/workflows/update-master.yml|Click here> for details! \", \"icon_emoji\": \":unite:\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      - name: Failure step
-        if: ${{ failure() }}
-        run: |
-          curl -X POST --data-urlencode "payload={\"channel\": \"#unite-mobile-pjproject\", \"username\": \"ci-bot\", \"text\": \":azure-x-mark: *Upstream/master to master merge* conflict detected! <https://github.com/intermedia-net/pjproject/actions/workflows/update-master.yml|Click here> for details! \", \"icon_emoji\": \":unite:\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
