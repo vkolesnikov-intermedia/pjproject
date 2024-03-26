@@ -184,6 +184,15 @@ using namespace pj;
 %template(RtcpFbCapVector)              std::vector<pj::RtcpFbCap>;
 %template(SslCertNameVector)            std::vector<pj::SslCertName>;
 
+//
+// Correct work with android threads, see more https://github.com/swig/swig/pull/2068
+//
+#if defined(SWIGJAVA) && defined(__ANDROID__)
+%insert("runtime") %{
+#define SWIG_JAVA_DETACH_ON_THREAD_END
+%}
+#endif
+
 #if defined(__ANDROID__)
    %ignore pj::WindowHandle::display;
    %ignore pj::WindowHandle::window;
