@@ -117,6 +117,7 @@ function copy_headers() {
     cp -r ${source_dir}/pjlib-util/include/* $headers_dir
     cp -r ${source_dir}/pjmedia/include/* $headers_dir
     cp -r ${source_dir}/pjnath/include/* $headers_dir
+    cp -r ${source_dir}/pjnat64/include/* $headers_dir
     #remove unneeded headers that was copied from "pjsip/include"
     prev_dir=`pwd -P`
     cd $headers_dir

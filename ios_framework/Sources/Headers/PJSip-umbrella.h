@@ -15,6 +15,7 @@
 #import <PJSipIOS/pjsip_auth.h>
 #import <PJSipIOS/pjsip_ua.h>
 #import <PJSipIOS/pjsua.h>
+#import <PJSipIOS/pjnat64/pj-nat64.h>
 
 FOUNDATION_EXPORT double PJSipIOSVersionNumber;
 FOUNDATION_EXPORT const unsigned char PJSipIOSVersionString[];
