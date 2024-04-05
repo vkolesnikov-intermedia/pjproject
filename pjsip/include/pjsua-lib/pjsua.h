@@ -852,6 +852,11 @@ typedef enum pjsua_ip_change_op {
     /**
      * The restart listener process.
      */
+    PJSUA_IP_CHANGE_OP_SHUTDOWN_TP,
+
+    /**
+     * The restart listener process.
+     */
     PJSUA_IP_CHANGE_OP_RESTART_LIS,
 
     /**
@@ -2787,6 +2792,15 @@ typedef struct pjsua_ip_change_param
      */
     unsigned        restart_lis_delay;
 
+    /**
+     * If set to PJ_TRUE, this will forcefully shutdown all transports.
+     * Note that this will shutdown TCP/TLS transports only, UDP transport
+     * should be restarted via restart_listener.
+     *
+     * Default : PJ_TRUE
+     */
+    pj_bool_t       shutdown_transport;
+
 } pjsua_ip_change_param;
 
 
@@ -4527,6 +4541,18 @@ typedef struct pjsua_acc_config
      * Default: PJ_TRUE
      */
     pj_bool_t           register_on_acc_add;
+
+    /**
+     * Specify whether account modification with pjsua_acc_modify() should
+     * automatically update registration if necessary, for example if
+     * account credentials change.
+     *
+     * Disable this when immediate registration is not desirable, such as
+     * during IP address change.
+     *
+     * Default: PJ_FALSE.
+     */
+    pj_bool_t           disable_reg_on_modify;
 
     /**
      * Specify account configuration specific to IP address change used when
@@ -7505,7 +7531,7 @@ typedef struct pjsua_snd_dev_param
      */
     unsigned            mode;
 
-    /*
+    /**
      * The library will maintain the global sound device settings set when
      * opening the sound device for the first time and later can be modified
      * using #pjsua_snd_set_setting(). These setings are then applied to any

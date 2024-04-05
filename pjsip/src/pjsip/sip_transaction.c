@@ -2144,11 +2144,15 @@ static void send_msg_callback( pjsip_send_state *send_state,
             else
                 sc = PJSIP_SC_TSX_TRANSPORT_ERROR;
 
-            /* Terminate transaction, if it's not already terminated. */
-            tsx_set_status_code(tsx, sc, &err);
-            if (tsx->state != PJSIP_TSX_STATE_TERMINATED &&
+            /* We terminate the transaction for 502 error. For 503,
+             * we will retry it.
+             * See https://github.com/pjsip/pjproject/pull/3805
+             */
+            if (sc == PJSIP_SC_BAD_GATEWAY &&
+                tsx->state != PJSIP_TSX_STATE_TERMINATED &&
                 tsx->state != PJSIP_TSX_STATE_DESTROYED)
             {
+                tsx_set_status_code(tsx, sc, &err);
                 /* Set tsx state to TERMINATED, but release the lock
                  * when invoking the callback, to avoid deadlock.
                  */
@@ -2161,9 +2165,17 @@ static void send_msg_callback( pjsip_send_state *send_state,
              */
             else if (tsx->transport_flag & TSX_HAS_PENDING_DESTROY)
             {
+                tsx_set_status_code(tsx, sc, &err);
                 tsx_set_state( tsx, PJSIP_TSX_STATE_DESTROYED, 
                                PJSIP_EVENT_TRANSPORT_ERROR,
                                send_state->tdata, 0);
+            } else if (tsx->role == PJSIP_ROLE_UAS && 
+                       tsx->transport_flag & TSX_HAS_PENDING_RESCHED &&
+                       tsx->state != PJSIP_TSX_STATE_TERMINATED &&
+                       tsx->state != PJSIP_TSX_STATE_DESTROYED) 
+            {
+                tsx->transport_flag &= ~(TSX_HAS_PENDING_RESCHED);
+                tsx_resched_retransmission(tsx);
             }
 
         } else {

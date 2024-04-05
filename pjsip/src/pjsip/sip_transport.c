@@ -1282,8 +1282,10 @@ PJ_DEF(pj_status_t) pjsip_transport_register( pjsip_tpmgr *mgr,
         /* Allocate new entry for the freelist. */
         for (; i < PJSIP_TRANSPORT_ENTRY_ALLOC_CNT; ++i) {
             tp_add = PJ_POOL_ZALLOC_T(mgr->pool, transport);
-            if (!tp_add)
+            if (!tp_add){
+                pj_lock_release(mgr->lock);
                 return PJ_ENOMEM;
+            }  
             pj_list_init(tp_add);
             pj_list_push_back(&mgr->tp_entry_freelist, tp_add);
         }
@@ -1985,6 +1987,60 @@ PJ_DEF(pj_status_t) pjsip_tpmgr_destroy( pjsip_tpmgr *mgr )
 }
 
 
+/**
+ * Initialize transports shutdown parameter with default values.
+ *
+ * @param prm       The parameter to be initialized.
+ */
+PJ_DEF(void) pjsip_tpmgr_shutdown_param_default(
+                                    pjsip_tpmgr_shutdown_param *prm)
+{
+    pj_bzero(prm, sizeof(*prm));
+    prm->force = PJ_TRUE;
+    prm->include_udp = PJ_TRUE;
+}
+
+/*
+ * Shutdown all transports.
+ */
+PJ_DEF(pj_status_t) pjsip_tpmgr_shutdown_all(
+                                    pjsip_tpmgr *mgr,
+                                    const pjsip_tpmgr_shutdown_param *prm)
+{
+    pj_hash_iterator_t itr_val;
+    pj_hash_iterator_t *itr;
+
+    PJ_ASSERT_RETURN(mgr, PJ_EINVAL);
+
+    PJ_LOG(3, (THIS_FILE, "Shutting down all transports"));
+
+    pj_lock_acquire(mgr->lock);
+
+    itr = pj_hash_first(mgr->table, &itr_val);
+    while (itr) {
+        transport *tp_entry = (transport*)pj_hash_this(mgr->table, itr);
+        if (tp_entry) {
+            transport *tp_iter = tp_entry;
+            do {
+                pjsip_transport *tp = tp_iter->tp;
+                if (prm->include_udp ||
+                    ((tp->key.type & ~PJSIP_TRANSPORT_IPV6) !=
+                            PJSIP_TRANSPORT_UDP))
+                {
+                    pjsip_transport_shutdown2(tp, prm->force);
+                }
+                tp_iter = tp_iter->next;
+            } while (tp_iter != tp_entry);
+        }
+        itr = pj_hash_next(mgr->table, itr);
+    }
+
+    pj_lock_release(mgr->lock);
+
+    return PJ_SUCCESS;
+}
+
+
 /*
  * pjsip_tpmgr_receive_packet()
  *
@@ -2398,6 +2454,7 @@ PJ_DEF(pj_status_t) pjsip_tpmgr_acquire_transport2(pjsip_tpmgr *mgr,
                 (sel->u.ip_ver == PJSIP_TPSELECTOR_USE_IPV6_ONLY &&
                  pjsip_transport_type_get_af(type) != pj_AF_INET6()))
             {
+                pj_lock_release(mgr->lock);
                 TRACE_((THIS_FILE, "Address type in tpsel not matched"));
                 return PJSIP_ETPNOTSUITABLE;
             }
