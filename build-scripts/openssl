@@ -1,0 +1,27 @@
+#!/bin/bash -e
+
+. config.conf
+
+function downloadOpenssl() {
+  workingDir="$1"
+  cd "$workingDir"
+  mkdir -p download
+  cd download
+  curl -L -# -o openssl.tar.gz "$OPENSSL_DOWNLOAD_URL" 2>&1
+  tar xzf openssl.tar.gz && rm -rf openssl.tar.gz
+}
+
+function buildOpenssl() {
+  workingDir="$1"
+  cd "$workingDir"
+  mkdir -p build
+  cd build
+  CFLAGS="-fPIC" ../download/openssl-"${OPENSSL_VERSION}"/Configure
+  make
+  make install
+  cd ../
+  mkdir -p libs/lib
+  cp build/libssl.a libs/lib
+  cp build/libcrypto.a libs/lib
+  cp -r build/include libs
+}

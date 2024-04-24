@@ -1,0 +1,23 @@
+#!/bin/bash -e
+
+. config.conf
+
+function downloadSwig() {
+  workingDir="$1"
+  cd "$workingDir"
+  mkdir -p download
+  cd download
+  curl -L -# -o swig.tar.gz "$SWIG_DOWNLOAD_URL" 2>&1
+  tar xzf swig.tar.gz && rm -rf swig.tar.gz
+}
+
+function buildAndInstallSwig() {
+  workingDir="$1"
+  cd "$workingDir"
+
+  mkdir -p build
+  cd build
+   ../download/swig-"${SWIG_VERSION}"/configure
+  make
+  make install
+}
