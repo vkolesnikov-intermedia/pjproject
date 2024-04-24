@@ -1,0 +1,29 @@
+#!/bin/bash -e
+
+. config.conf
+
+function downloadOpus() {
+  workingDir="$1"
+  cd "$workingDir"
+  mkdir -p download
+  cd download
+  curl -L -# -o opus.tar.gz "$OPUS_DOWNLOAD_URL" 2>&1
+  tar xzf opus.tar.gz && rm -rf opus.tar.gz
+}
+
+function buildOpus() {
+  workingDir="$1"
+  cd "$workingDir"
+
+  mkdir -p build
+  cd build
+  CFLAGS="-fPIC" ../download/opus-"${OPUS_VERSION}"/configure
+  make
+  cd ../
+  mkdir -p libs/lib
+  cp build/.libs/libopus.a libs/lib
+  cp build/.libs/libopus.la libs/lib
+  cp build/.libs/libopus.lai libs/lib
+  mkdir -p libs/include/opus
+  cp -r "download/opus-${OPUS_VERSION}/include"/* libs/include/opus
+}

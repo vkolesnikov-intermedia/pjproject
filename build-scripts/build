@@ -1,0 +1,125 @@
+#!/bin/bash -e
+
+. config.conf
+source ./openssl
+source ./opus
+source ./swig
+
+# the paths are relative (!)
+WORKING_DIR="work"
+PJSUA_SWIG_DIR="pjsip-apps/src/swig"
+CONFIG_SITE_PATH="pjlib/include/pj/config_site.h"
+
+OPUS_DIR="deps/opus"
+OPENSSL_DIR="deps/openssl"
+SWIG_DIR+="deps/swig"
+
+function prepareWorkingDir {
+  rm -rf "$WORKING_DIR/result"
+  export WORKING_DIR="$PWD/work"
+
+  mkdir -p "$WORKING_DIR"
+  cd "$WORKING_DIR"
+  mkdir -p $OPUS_DIR
+  mkdir -p $OPENSSL_DIR
+  mkdir -p $SWIG_DIR
+  mkdir -p result
+}
+
+function installDependencies() {
+  currentDir=$PWD
+  echo "openssl-$OPENSSL_VERSION downloading ..."
+  downloadOpenssl "$OPENSSL_DIR"
+  cd "$currentDir"
+  echo "openssl-$OPENSSL_VERSION building ..."
+  buildOpenssl "$OPENSSL_DIR"
+  cd "$currentDir"
+
+  echo "opus-$OPUS_VERSION downloading ..."
+  downloadOpus "$OPUS_DIR"
+  cd "$currentDir"
+  echo "opus-$OPUS_VERSION building ..."
+  buildOpus "$OPUS_DIR"
+  cd "$currentDir"
+
+  echo "swig-$SWIG_VERSION downloading ..."
+  downloadSwig "$SWIG_DIR"
+  cd "$currentDir"
+  echo "swig-$SWIG_VERSION building ..."
+  buildAndInstallSwig "$SWIG_DIR"
+  cd "$currentDir"
+}
+
+function setConfigSite {
+  echo "#include <pj/config_site_sample.h>" >> "$CONFIG_SITE_PATH"
+  echo "#define PJMEDIA_HAS_VIDEO 0" >> "$CONFIG_SITE_PATH"
+  echo "#define PJMEDIA_AUDIO_DEV_HAS_ANDROID_JNI 0" >> "$CONFIG_SITE_PATH"
+  echo "#define PJMEDIA_AUDIO_DEV_HAS_OPENSL 0" >> "$CONFIG_SITE_PATH"
+  echo "#define PJSIP_AUTH_AUTO_SEND_NEXT 0" >> "$CONFIG_SITE_PATH"
+  echo "#define PJMEDIA_HAS_OPUS_CODEC 1" >> "$CONFIG_SITE_PATH"
+  echo "#define PJSUA_DETECT_MERGED_REQUESTS 0" >> "$CONFIG_SITE_PATH"
+  echo "#define PJ_HAS_IPV6 1" >> "$CONFIG_SITE_PATH"
+}
+
+function buildPjSip {
+  args=(
+    "--with-opus=$WORKING_DIR/$OPUS_DIR/libs"
+    "--with-ssl=$WORKING_DIR/$OPENSSL_DIR/libs"
+  )
+
+  CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure "${args[@]}"
+  make dep
+  make clean
+  make
+
+  cd "${PJSUA_SWIG_DIR}"
+  make
+}
+
+function moveArtifacts() {
+  libDir="$WORKING_DIR/result/lib"
+  includeDir="$WORKING_DIR/result/include"
+  jniDir="$WORKING_DIR/result/jni"
+
+  mkdir -p "$libDir"
+  cp -r "pjsip/lib"/* "$libDir"
+
+  mkdir -p "$includeDir/pjlib"
+  cp -r "pjlib/include"/* "$includeDir/pjlib"
+
+  mkdir -p "$includeDir/pjlib-util"
+  cp -r "pjlib-util/include"/* "$includeDir/pjlib-util"
+
+  mkdir -p "$includeDir/pjmedia"
+  cp -r "pjmedia/include"/* "$includeDir/pjmedia"
+
+  mkdir -p "$includeDir/pjnath"
+  cp -r "pjnath/include"/* "$includeDir/pjnath"
+
+  mkdir -p "$includeDir/pjnat64"
+  cp -r "pjnat64/include"/* "$includeDir/pjnat64"
+
+  mkdir -p "$includeDir/pjsip"
+  cp -r "pjsip/include"/* "$includeDir/pjsip"
+
+  mkdir -p "$jniDir"
+  cp -r "${PJSUA_SWIG_DIR}/java/output"/* "$jniDir"
+}
+
+cd ../
+projectDir=$PWD
+cd build-scripts/
+echo "Prepare working dir..."
+prepareWorkingDir
+echo "Install dependencies..."
+installDependencies
+echo "Set config state..."
+cd "$projectDir"
+setConfigSite
+echo "Building pjsip..."
+buildPjSip
+cd "$projectDir"
+echo "Finalising..."
+moveArtifacts
+
+echo "Finished: check the generated output in $WORKING_DIR/result"

@@ -1,0 +1,40 @@
+name: MacOs arm64 release
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  RELEASE_ARCHIVE_NAME: macOS-arm64-release
+
+jobs:
+  build-macos-arm64:
+    runs-on: macos-14
+    permissions:
+      contents: write
+      packages: read
+    steps:
+      - name: Pre-requirements
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build
+        run: |
+          cd build-scripts
+          sudo ./build
+      - name: Archive artifacts
+        if: always()
+        run: |
+          tar -czvf "$RELEASE_ARCHIVE_NAME".tar.gz -C build-scripts/work/result .
+      - name: Publish release
+        if: always()
+        id: update_release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          artifacts: ${{ env.RELEASE_ARCHIVE_NAME }}.tar.gz
+          allowUpdates: true
+          omitNameDuringUpdate: true
