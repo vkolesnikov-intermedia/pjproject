@@ -1,0 +1,55 @@
+name: Merge master to im-master PR
+
+on:
+  push:
+    branches:
+      master
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  REPO_NAME: ${{ github.repository }}
+  SOURCE_BRANCH: master
+  TARGET_BRANCH: im-master
+  PR_TITLE: "Automated Pull Request"
+  PR_BODY: "Merge master to im-master"
+  REVIEWERS: '["dshamaev-intermedia", "anikitin-intermedia", "esmitenko-intermedia", "inekrasov-intermedia"]'
+
+jobs:
+  master_to_im_master_pr:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Create Pull Request
+      id: create_pr
+      run: |
+        response=$(curl -v -s -w "%{http_code}\n" \
+          -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          https://api.github.com/repos/$REPO_NAME/pulls \
+          -d "{\"title\":\"$PR_TITLE\",\"body\":\"$PR_BODY\",\"head\":\"$SOURCE_BRANCH\",\"base\":\"$TARGET_BRANCH\"}")
+
+        http_status=$(echo "$response" | tail -n1)
+        json_data=$(echo "$response" | sed '$d')        
+
+        if [ "$http_status" -eq 201 ]; then
+          pr_number=$(echo "$json_data" | jq -r '.number')
+          echo "Pull request created successfully. PR NUMBER: $pr_number"
+          echo "PR_NUMBER=$pr_number" >> "$GITHUB_OUTPUT"
+        else
+          echo "Failed to create pull request. HTTP status: $response"
+          exit 1
+        fi
+
+    - name: Add Reviewers
+      env:
+          PR_NUMBER: ${{ steps.create_pr.outputs.PR_NUMBER }}      
+
+      if: success()
+      run: |
+        curl -v \
+          -X POST \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/$REPO_NAME/pulls/$PR_NUMBER/requested_reviewers \
+          -d "{\"reviewers\":$REVIEWERS}"
