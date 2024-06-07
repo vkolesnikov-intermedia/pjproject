@@ -1689,7 +1689,7 @@ static void srtp_rtp_cb(pjmedia_tp_cb_param *param)
 #endif
 
     if (err != srtp_err_status_ok) {
-        PJ_LOG(5,(srtp->pool->obj_name,
+        PJ_LOG(2,(srtp->pool->obj_name,
                   "Failed to unprotect SRTP, pkt size=%ld, err=%s",
                   size, get_libsrtp_errstr(err)));
     } else {
@@ -2113,7 +2113,7 @@ PJ_DEF(pj_status_t) pjmedia_transport_srtp_decrypt_pkt(pjmedia_transport *tp,
         err = srtp_unprotect_rtcp(srtp->srtp_ctx.srtp_rx_ctx, pkt, pkt_len);
 
     if (err != srtp_err_status_ok) {
-        PJ_LOG(5,(srtp->pool->obj_name,
+        PJ_LOG(2,(srtp->pool->obj_name,
                   "Failed to unprotect SRTP, pkt size=%d, err=%s",
                   *pkt_len, get_libsrtp_errstr(err)));
     }
