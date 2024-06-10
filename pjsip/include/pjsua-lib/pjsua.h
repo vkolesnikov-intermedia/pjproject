@@ -46,6 +46,9 @@
 /* Include all PJNATH headers */
 #include <pjnath.h>
 
+/* Include all PJNATH headers */
+#include <pjnat64/pj-nat64.h>
+
 /* Include all PJLIB-UTIL headers. */
 #include <pjlib-util.h>
 

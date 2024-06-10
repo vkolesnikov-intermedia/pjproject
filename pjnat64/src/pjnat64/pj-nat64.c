@@ -1,6 +1,3 @@
-
-#include <pj/types.h>
-
 #include <pjsip-ua/sip_inv.h>
 #include <pjsip/sip_types.h>
 

@@ -236,12 +236,14 @@ export APP_CFLAGS := -DPJ_AUTOCONF=1\
         -I$(PJDIR)/pjlib/include\
         -I$(PJDIR)/pjlib-util/include\
         -I$(PJDIR)/pjnath/include\
+        -I$(PJDIR)/pjnat64/include\
         -I$(PJDIR)/pjmedia/include\
         -I$(PJDIR)/pjsip/include
 export APP_CXXFLAGS := @CXXFLAGS@ $(APP_CFLAGS)
 export APP_LDFLAGS := -L$(PJDIR)/pjlib/lib\
         -L$(PJDIR)/pjlib-util/lib\
         -L$(PJDIR)/pjnath/lib\
+        -L$(PJDIR)/pjnat64/lib\
         -L$(PJDIR)/pjmedia/lib\
         -L$(PJDIR)/pjsip/lib\
         -L$(PJDIR)/third_party/lib\
@@ -259,6 +261,7 @@ export APP_LIB_FILES := \
         $(PJ_DIR)/pjmedia/lib/libpjmedia-$(LIB_SUFFIX) \
         $(PJ_DIR)/pjmedia/lib/libpjmedia-audiodev-$(LIB_SUFFIX) \
         $(PJ_DIR)/pjnath/lib/libpjnath-$(LIB_SUFFIX) \
+        $(PJ_DIR)/pjnat64/lib/libpjnat64-$(LIB_SUFFIX) \
         $(PJ_DIR)/pjlib-util/lib/libpjlib-util-$(LIB_SUFFIX) \
         $(APP_THIRD_PARTY_LIB_FILES) \
         $(PJ_DIR)/pjlib/lib/libpj-$(LIB_SUFFIX)
@@ -270,6 +273,7 @@ ifeq ($(PJ_SHARED_LIBRARIES),)
 export PJLIB_LDLIB := -lpj-$(TARGET_NAME)
 export PJLIB_UTIL_LDLIB := -lpjlib-util-$(TARGET_NAME)
 export PJNATH_LDLIB := -lpjnath-$(TARGET_NAME)
+export PJNAT64_LDLIB := -lpjnat64-$(TARGET_NAME)
 export PJMEDIA_AUDIODEV_LDLIB := -lpjmedia-audiodev-$(TARGET_NAME)
 export PJMEDIA_VIDEODEV_LDLIB := -lpjmedia-videodev-$(TARGET_NAME)
 export PJMEDIA_LDLIB := -lpjmedia-$(TARGET_NAME)
@@ -283,6 +287,7 @@ else
 export PJLIB_LDLIB := -lpj
 export PJLIB_UTIL_LDLIB := -lpjlib-util
 export PJNATH_LDLIB := -lpjnath
+export PJNAT64_LDLIB := -lpjnat64
 export PJMEDIA_AUDIODEV_LDLIB := -lpjmedia-audiodev
 export PJMEDIA_VIDEODEV_LDLIB := -lpjmedia-videodev
 export PJMEDIA_LDLIB := -lpjmedia
@@ -302,6 +307,7 @@ export ADD_LIB_FILES := $(PJ_DIR)/pjsip/lib/libpjsua.$(SHLIB_SUFFIX).$(PJ_VERSIO
         $(PJ_DIR)/pjmedia/lib/libpjmedia.$(SHLIB_SUFFIX).$(PJ_VERSION_MAJOR) $(PJ_DIR)/pjmedia/lib/libpjmedia.$(SHLIB_SUFFIX) \
         $(PJ_DIR)/pjmedia/lib/libpjmedia-audiodev.$(SHLIB_SUFFIX).$(PJ_VERSION_MAJOR) $(PJ_DIR)/pjmedia/lib/libpjmedia-audiodev.$(SHLIB_SUFFIX) \
         $(PJ_DIR)/pjnath/lib/libpjnath.$(SHLIB_SUFFIX).$(PJ_VERSION_MAJOR) $(PJ_DIR)/pjnath/lib/libpjnath.$(SHLIB_SUFFIX) \
+        $(PJ_DIR)/pjnat64/lib/libpjnat64.$(SHLIB_SUFFIX).$(PJ_VERSION_MAJOR) $(PJ_DIR)/pjnat64/lib/libpjnat64.$(SHLIB_SUFFIX) \
         $(PJ_DIR)/pjlib-util/lib/libpjlib-util.$(SHLIB_SUFFIX).$(PJ_VERSION_MAJOR) $(PJ_DIR)/pjlib-util/lib/libpjlib-util.$(SHLIB_SUFFIX) \
         $(PJ_DIR)/pjlib/lib/libpj.$(SHLIB_SUFFIX).$(PJ_VERSION_MAJOR) $(PJ_DIR)/pjlib/lib/libpj.$(SHLIB_SUFFIX)
 
@@ -324,6 +330,7 @@ export APP_LDLIBS := $(PJSUA_LIB_LDLIB) \
         $(PJMEDIA_AUDIODEV_LDLIB) \
         $(PJMEDIA_LDLIB) \
         $(PJNATH_LDLIB) \
+        $(PJNAT64_LDLIB) \
         $(PJLIB_UTIL_LDLIB) \
         $(APP_THIRD_PARTY_LIBS)\
         $(APP_THIRD_PARTY_EXT)\
