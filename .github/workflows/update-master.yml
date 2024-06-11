@@ -8,15 +8,12 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
-    permissions:
-      actions: write
-      contents: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.WORKFLOW_INTERMEDIA_TOKEN }}
           ref: master
           fetch-depth: 0
 
