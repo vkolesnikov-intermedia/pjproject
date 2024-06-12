@@ -13,7 +13,6 @@ RULES_MAK := $(PJDIR)/build/rules.mak
 PJLIB_LIB:=$(PJDIR)/pjlib/lib/libpj-$(TARGET_NAME)$(LIBEXT)
 PJLIB_UTIL_LIB:=$(PJDIR)/pjlib-util/lib/libpjlib-util-$(TARGET_NAME)$(LIBEXT)
 PJNATH_LIB:=$(PJDIR)/pjnath/lib/libpjnath-$(TARGET_NAME)$(LIBEXT)
-PJNAT64_LIB:=$(PJDIR)/pjnat64/lib/libpjnat64-$(TARGET_NAME)$(LIBEXT)
 
 export PJMEDIA_LIB:=libpjmedia-$(TARGET_NAME)$(LIBEXT)
 export PJMEDIA_CODEC_LIB:=libpjmedia-codec-$(TARGET_NAME)$(LIBEXT)
@@ -45,7 +44,6 @@ export _CFLAGS 	:= $(CC_CFLAGS) $(OS_CFLAGS) $(HOST_CFLAGS) $(M_CFLAGS) \
 		   $(CC_INC)../../pjlib-util/include \
 		   $(CC_INC)../../pjmedia/include \
 		   $(CC_INC)../../pjnath/include \
-		   $(CC_INC)../../pjnat64/include \
 		   $(CC_INC)../..
 export _CXXFLAGS:= $(CC_CXXFLAGS) $(OS_CXXFLAGS) $(M_CXXFLAGS) \
 		   $(HOST_CXXFLAGS) $(CXXFLAGS) $(_CFLAGS) 
@@ -84,7 +82,6 @@ export PJMEDIA_CXXFLAGS += $(_CXXFLAGS)
 export PJMEDIA_LDFLAGS += $(PJLIB_LDLIB) \
 			  $(PJLIB_UTIL_LDLIB) \
 			  $(PJNATH_LDLIB) \
-			  $(PJNAT64_LDLIB) \
 			  $(_LDFLAGS)
 
 
@@ -168,7 +165,6 @@ export PJMEDIA_TEST_LDFLAGS += $(PJMEDIA_CODEC_LDLIB) \
 			       $(PJMEDIA_AUDIODEV_LDLIB) \
 			       $(PJMEDIA_LDLIB) \
 			       $(PJNATH_LDLIB) \
-			       $(PJNAT64_LDLIB) \
 			       $(PJLIB_UTIL_LDLIB) \
 			       $(PJLIB_LDLIB) \
 			       $(_LDFLAGS)
@@ -293,6 +289,6 @@ depend:
 	$(MAKE) -f $(RULES_MAK) APP=PJMEDIA_CODEC app=pjmedia-codec $@
 	$(MAKE) -f $(RULES_MAK) APP=PJMEDIA_TEST app=pjmedia-test $@
 	$(MAKE) -f $(RULES_MAK) APP=PJSDP app=pjsdp $@
-	echo '$(BINDIR)/$(PJMEDIA_TEST_EXE): $(LIBDIR)/$(PJMEDIA_LIB) $(LIBDIR)/$(PJMEDIA_CODEC_LIB) $(PJNATH_LIB) $(PJNAT64_LIB) $(PJLIB_UTIL_LIB) $(PJLIB_LIB)' >> .pjmedia-test-$(TARGET_NAME).depend
+	echo '$(BINDIR)/$(PJMEDIA_TEST_EXE): $(LIBDIR)/$(PJMEDIA_LIB) $(LIBDIR)/$(PJMEDIA_CODEC_LIB) $(PJNATH_LIB) $(PJLIB_UTIL_LIB) $(PJLIB_LIB)' >> .pjmedia-test-$(TARGET_NAME).depend
 
 
