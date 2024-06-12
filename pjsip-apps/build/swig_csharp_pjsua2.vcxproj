@@ -147,7 +147,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
@@ -165,7 +165,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
@@ -181,7 +181,7 @@
     <Midl />
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -197,7 +197,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -217,7 +217,7 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
@@ -234,7 +234,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <Midl />
     <ClCompile>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>

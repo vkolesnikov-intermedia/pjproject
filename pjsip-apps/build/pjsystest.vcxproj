@@ -113,7 +113,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -125,7 +125,7 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -137,7 +137,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <Midl />
     <ClCompile>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -147,7 +147,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -159,7 +159,7 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -170,7 +170,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <Midl />
     <ClCompile>
-      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../pjsip/include;../../pjlib/include;../../pjlib-util/include;../../pjmedia/include;../../pjnath/include;../../pjnat64/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

@@ -127,7 +127,6 @@ export PJSUA_LIB_LDFLAGS += $(PJSIP_UA_LDLIB) \
 			    $(PJMEDIA_CODEC_LDLIB) \
 			    $(PJMEDIA_LDLIB) \
 			    $(PJNATH_LDLIB) \
-			    $(PJNAT64_LDLIB) \
 			    $(PJLIB_UTIL_LDLIB) \
 			    $(PJLIB_LDLIB) \
 			    $(_LDFLAGS)
@@ -198,7 +197,6 @@ export TEST_LDFLAGS += $(PJSIP_LDLIB) \
 		       $(PJMEDIA_AUDIODEV_LDLIB) \
 		       $(PJLIB_UTIL_LDLIB) \
 		       $(PJNATH_LDLIB) \
-		       $(PJNAT64_LDLIB) \
 		       $(PJLIB_LDLIB) \
 		       $(_LDFLAGS)
 ifeq ($(EXCLUDE_APP),0)
@@ -332,8 +330,8 @@ depend:
 	$(MAKE) -f $(RULES_MAK) APP=PJSUA2_LIB app=pjsua2-lib $@
 	$(MAKE) -f $(RULES_MAK) APP=TEST app=pjsip-test $@
 	$(MAKE) -f $(RULES_MAK) APP=PJSUA2_TEST app=pjsua2-test $@
-	echo '$(BINDIR)/$(TEST_EXE): $(PJMEDIA_LIB) $(LIBDIR)/$(PJSUA_LIB_LIB) $(LIBDIR)/$(PJSIP_SIMPLE_LIB) $(LIBDIR)/$(PJSIP_UA_LIB) $(LIBDIR)/$(PJSIP_LIB) $(PJNATH_LIB) $(PJNAT64_LIB) $(PJLIB_UTIL_LIB) $(PJLIB_LIB)' >> .pjsip-test-$(TARGET_NAME).depend
-	echo '$(BINDIR)/$(PJSUA2_TEST_EXE): $(LIBDIR)/$(PJSUA2_LIB_LIB) $(PJMEDIA_LIB) $(LIBDIR)/$(PJSUA_LIB_LIB) $(LIBDIR)/$(PJSIP_SIMPLE_LIB) $(LIBDIR)/$(PJSIP_UA_LIB) $(LIBDIR)/$(PJSIP_LIB) $(PJNATH_LIB) $(PJNAT64_LIB) $(PJLIB_UTIL_LIB) $(PJLIB_LIB)' >> .pjsua2-test-$(TARGET_NAME).depend
+	echo '$(BINDIR)/$(TEST_EXE): $(PJMEDIA_LIB) $(LIBDIR)/$(PJSUA_LIB_LIB) $(LIBDIR)/$(PJSIP_SIMPLE_LIB) $(LIBDIR)/$(PJSIP_UA_LIB) $(LIBDIR)/$(PJSIP_LIB) $(PJNATH_LIB) $(PJLIB_UTIL_LIB) $(PJLIB_LIB)' >> .pjsip-test-$(TARGET_NAME).depend
+	echo '$(BINDIR)/$(PJSUA2_TEST_EXE): $(LIBDIR)/$(PJSUA2_LIB_LIB) $(PJMEDIA_LIB) $(LIBDIR)/$(PJSUA_LIB_LIB) $(LIBDIR)/$(PJSIP_SIMPLE_LIB) $(LIBDIR)/$(PJSIP_UA_LIB) $(LIBDIR)/$(PJSIP_LIB) $(PJNATH_LIB) $(PJLIB_UTIL_LIB) $(PJLIB_LIB)' >> .pjsua2-test-$(TARGET_NAME).depend
 
 realclean:
 	$(subst @@,$(subst /,$(HOST_PSEP),.pjsip-$(TARGET_NAME).depend),$(HOST_RMR))

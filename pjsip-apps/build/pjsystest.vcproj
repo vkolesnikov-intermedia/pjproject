@@ -49,7 +49,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_CONSOLE;"
 			/>
 			<Tool
@@ -116,7 +116,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_CONSOLE;"
 			/>
 			<Tool
@@ -180,7 +180,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_CONSOLE;"
 				DebugInformationFormat="3"
 			/>
@@ -245,7 +245,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_CONSOLE;"
 			/>
 			<Tool
@@ -312,7 +312,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_CONSOLE;"
 			/>
 			<Tool
@@ -376,7 +376,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../../pjsip/include,../../pjlib/include,../../pjlib-util/include,../../pjmedia/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_CONSOLE;"
 			/>
 			<Tool
@@ -442,7 +442,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../../pjlib/include,../../pjlib-util/include,../../pjnath/include,../../pjmedia/include,../../pjsip/include"
+				AdditionalIncludeDirectories="../../pjlib/include,../../pjlib-util/include,../../pjnath/include,../../pjnat64/include,../../pjmedia/include,../../pjsip/include"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -511,7 +511,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../../pjlib/include,../../pjlib-util/include,../../pjnath/include,../../pjmedia/include,../../pjsip/include"
+				AdditionalIncludeDirectories="../../pjlib/include,../../pjlib-util/include,../../pjnath/include,../../pjnat64/include,../../pjmedia/include,../../pjsip/include"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -581,7 +581,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../../pjlib/include,../../pjlib-util/include,../../pjnath/include,../../pjmedia/include,../../pjsip/include"
+				AdditionalIncludeDirectories="../../pjlib/include,../../pjlib-util/include,../../pjnath/include,../../pjnat64/include,../../pjmedia/include,../../pjsip/include"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -650,7 +650,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../../pjlib/include,../../pjlib-util/include,../../pjnath/include,../../pjmedia/include,../../pjsip/include"
+				AdditionalIncludeDirectories="../../pjlib/include,../../pjlib-util/include,../../pjnath/include,../../pjnat64/include,../../pjmedia/include,../../pjsip/include"
 				BufferSecurityCheck="false"
 			/>
 			<Tool

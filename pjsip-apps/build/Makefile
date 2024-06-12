@@ -15,6 +15,7 @@ export _CFLAGS 	:= $(CC_CFLAGS) $(OS_CFLAGS) $(HOST_CFLAGS) $(M_CFLAGS) \
 		   $(CC_INC)../../pjlib/include \
 		   $(CC_INC)../../pjlib-util/include \
 		   $(CC_INC)../../pjnath/include \
+		   $(CC_INC)../../pjnat64/include \
 		   $(CC_INC)../../pjmedia/include
 export _CXXFLAGS:= $(_CFLAGS) $(CC_CXXFLAGS) $(OS_CXXFLAGS) $(M_CXXFLAGS) \
 		   $(HOST_CXXFLAGS) $(CXXFLAGS)
