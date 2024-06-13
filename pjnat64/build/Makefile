@@ -9,12 +9,9 @@ export BINDIR := ../bin
 RULES_MAK := $(PJDIR)/build/rules.mak
 
 PJLIB_LIB:=../../pjlib/lib/libpj-$(TARGET_NAME)$(LIBEXT)
+PJLIB_UTIL_LIB:=../../pjlib-util/lib/libpjlib-util-$(TARGET_NAME)$(LIBEXT)
 PJSIP_LIB:=../../pjsip/lib/libpjsip-$(TARGET_NAME)$(LIBEXT)
 PJMEDIA_LIB:=../../pjmedia/lib/libpjmedia-$(TARGET_NAME)$(LIBEXT)
-#PJSIP_SIMPLE_LIB := 
-#PJSIP_UA_LIB := 
-#PJSUA_LIB_LIB := 
-#PJSUA2_LIB_LIB := 
 
 export PJNAT64_LIB:=libpjnat64-$(TARGET_NAME)$(LIBEXT)
 
@@ -47,7 +44,7 @@ export PJNAT64_OBJS += $(OS_OBJS) $(M_OBJS) $(CC_OBJS) $(HOST_OBJS) \
 		pj-nat64.o
 export PJNAT64_CFLAGS += $(_CFLAGS)
 export PJNAT64_CXXFLAGS += $(_CXXFLAGS)
-export PJNAT64_LDFLAGS += $(PJLIB_LDLIB) $(PJSIP_LDLIB) $(PJMEDIA_LDLIB) $(_LDFLAGS)
+export PJNAT64_LDFLAGS += $(PJLIB_LDLIB) $(PJLIB_UTIL_LDLIB) $(PJMEDIA_LDLIB) $(PJSIP_LDLIB) $(_LDFLAGS)
 
 ###############################################################################
 # Main entry
@@ -69,7 +66,7 @@ distclean: realclean
 
 pjnat64: $(PJNAT64_LIB)
 $(PJNAT64_SONAME): $(PJNAT64_LIB)
-$(PJNAT64_LIB) $(PJNAT64_SONAME): $(PJLIB_LIB) $(PJLIB_SONAME) $(PJSIP_LIB) $(PJSIP_SONAME) $(PJMEDIA_LIB) $(PJMEDIA_SONAME)
+$(PJNAT64_LIB) $(PJNAT64_SONAME): $(PJLIB_LIB) $(PJLIB_SONAME) $(PJLIB_UTIL_LIB) $(PJLIB_UTIL_SONAME) $(PJMEDIA_LIB) $(PJMEDIA_SONAME) $(PJSIP_LIB) $(PJSIP_SONAME)
 	$(MAKE) -f $(RULES_MAK) APP=PJNAT64 app=pjnat64 $(subst /,$(HOST_PSEP),$(LIBDIR)/$@)
 
 .PHONY: pjnat64.ko

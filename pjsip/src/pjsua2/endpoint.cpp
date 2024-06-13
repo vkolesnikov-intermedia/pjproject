@@ -1903,26 +1903,6 @@ void Endpoint::libCreate() PJSUA2_THROW(Error)
     threadDescMap[pj_thread_this()] = NULL;
 }
 
-void Endpoint::nat64ModuleRegister() PJSUA2_THROW(Error)
-{
-    PJSUA2_CHECK_EXPR( pj_nat64_enable_rewrite_module() );
-}
-
-void Endpoint::nat64ModuleUnregister() PJSUA2_THROW(Error)
-{
-    PJSUA2_CHECK_EXPR( pj_nat64_disable_rewrite_module() );
-}
-
-void Endpoint::nat64ModuleEnable(bool enable)
-{
-    pj_nat64_set_enable(enable);
-}
-
-void Endpoint::nat64ModuleEnableDebugLogs(bool enable)
-{
-    pj_nat64_set_debug(enable);
-}
-
 pjsua_state Endpoint::libGetState() const
 {
     return pjsua_get_state();

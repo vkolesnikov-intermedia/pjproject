@@ -23,7 +23,6 @@
  * @brief PJSUA2 Base Agent Operation
  */
 #include <pjsua-lib/pjsua.h>
-#include <pjnat64/pj-nat64.h>
 
 /**
  * @defgroup PJSUA2_CFG_Compile Compile time settings

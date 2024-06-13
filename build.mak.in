@@ -237,22 +237,19 @@ export APP_CFLAGS := -DPJ_AUTOCONF=1\
         -I$(PJDIR)/pjlib-util/include\
         -I$(PJDIR)/pjnath/include\
         -I$(PJDIR)/pjmedia/include\
-        -I$(PJDIR)/pjsip/include\
-        -I$(PJDIR)/pjnat64/include
+        -I$(PJDIR)/pjsip/include
 export APP_CXXFLAGS := @CXXFLAGS@ $(APP_CFLAGS)
 export APP_LDFLAGS := -L$(PJDIR)/pjlib/lib\
         -L$(PJDIR)/pjlib-util/lib\
         -L$(PJDIR)/pjnath/lib\
         -L$(PJDIR)/pjmedia/lib\
         -L$(PJDIR)/pjsip/lib\
-        -L$(PJDIR)/pjnat64/lib\
         -L$(PJDIR)/third_party/lib\
         $(PJ_VIDEO_LDFLAGS) \
         @LDFLAGS@
 export APP_LDXXFLAGS := $(APP_LDFLAGS)
 
 export APP_LIB_FILES := \
-        $(PJ_DIR)/pjnat64/lib/libpjnat64-$(LIB_SUFFIX) \
         $(PJ_DIR)/pjsip/lib/libpjsua-$(LIB_SUFFIX) \
         $(PJ_DIR)/pjsip/lib/libpjsip-ua-$(LIB_SUFFIX) \
         $(PJ_DIR)/pjsip/lib/libpjsip-simple-$(LIB_SUFFIX) \
@@ -299,7 +296,6 @@ export PJSUA_LIB_LDLIB := -lpjsua
 export PJSUA2_LIB_LDLIB := -lpjsua2
 
 export ADD_LIB_FILES := $(PJ_DIR)/pjsip/lib/libpjsua.$(SHLIB_SUFFIX).$(PJ_VERSION_MAJOR) $(PJ_DIR)/pjsip/lib/libpjsua.$(SHLIB_SUFFIX) \
-        $(PJ_DIR)/pjnat64/lib/libpjnat64.$(SHLIB_SUFFIX).$(PJ_VERSION_MAJOR) $(PJ_DIR)/pjnat64/lib/libpjnat64.$(SHLIB_SUFFIX) \
         $(PJ_DIR)/pjsip/lib/libpjsip-ua.$(SHLIB_SUFFIX).$(PJ_VERSION_MAJOR) $(PJ_DIR)/pjsip/lib/libpjsip-ua.$(SHLIB_SUFFIX) \
         $(PJ_DIR)/pjsip/lib/libpjsip-simple.$(SHLIB_SUFFIX).$(PJ_VERSION_MAJOR) $(PJ_DIR)/pjsip/lib/libpjsip-simple.$(SHLIB_SUFFIX) \
         $(PJ_DIR)/pjsip/lib/libpjsip.$(SHLIB_SUFFIX).$(PJ_VERSION_MAJOR) $(PJ_DIR)/pjsip/lib/libpjsip.$(SHLIB_SUFFIX) \
@@ -322,7 +318,6 @@ export PJSUA2_LIB_LDLIB :=
 endif
 
 export APP_LDLIBS := $(PJSUA_LIB_LDLIB) \
-        $(PJNAT64_LDLIB) \
         $(PJSIP_UA_LDLIB) \
         $(PJSIP_SIMPLE_LDLIB) \
         $(PJSIP_LDLIB) \

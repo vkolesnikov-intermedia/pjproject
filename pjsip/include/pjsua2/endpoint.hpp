@@ -1226,14 +1226,6 @@ public:
      */
     void libCreate() PJSUA2_THROW(Error);
 
-    void nat64ModuleRegister() PJSUA2_THROW(Error);
-
-    void nat64ModuleUnregister() PJSUA2_THROW(Error);
-
-    void nat64ModuleEnable(bool enable);
-
-    void nat64ModuleEnableDebugLogs(bool enable);
-
     /**
      * Get library state.
      *
