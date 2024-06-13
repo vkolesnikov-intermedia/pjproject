@@ -39,9 +39,15 @@ else
     LIBPJSUA2=$(LIBPJSUA2_DIR)/libpjsua2.a
 endif
 
+ifeq ($(OS),darwin)
+	PJNAT64_LDLIBS=-Wl,-all_load $(PJNAT64_LDLIB)
+else
+	PJNAT64_LDLIBS=-Wl,--whole-archive $(PJNAT64_LDLIB) -Wl,--no-whole-archive
+endif
+
 # Build settings
 MY_CFLAGS	 := $(PJ_CXXFLAGS) -I$(PJDIR)/pjnat64/include $(CFLAGS)
-MY_LDFLAGS	 := $(PJ_LDXXFLAGS) -L$(PJDIR)/pjnat64/lib $(PJ_LDXXLIBS) -Wl,--whole-archive $(PJNAT64_LDLIB) -Wl,--no-whole-archive $(LDFLAGS)
+MY_LDFLAGS	 := $(PJ_LDXXFLAGS) -L$(PJDIR)/pjnat64/lib $(PJ_LDXXLIBS) $(PJNAT64_LDLIBS) $(LDFLAGS)
 
 .PHONY: all install uninstall
 
