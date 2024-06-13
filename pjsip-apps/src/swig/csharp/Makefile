@@ -41,7 +41,7 @@ endif
 
 # Build settings
 MY_CFLAGS	 := $(PJ_CXXFLAGS) -I$(PJDIR)/pjnat64/include $(CFLAGS)
-MY_LDFLAGS	 := $(PJ_LDXXFLAGS) -L$(PJDIR)/pjnat64/lib $(PJ_LDXXLIBS) $(PJNAT64_LDLIB) $(LDFLAGS)
+MY_LDFLAGS	 := $(PJ_LDXXFLAGS) -L$(PJDIR)/pjnat64/lib $(PJ_LDXXLIBS) -Wl,--whole-archive $(PJNAT64_LDLIB) -Wl,--no-whole-archive $(LDFLAGS)
 
 .PHONY: all install uninstall
 
