@@ -18,7 +18,7 @@ run_test: pjlib_test pjlib_util_test pjnath_test pjsip_test pjsua_test
 
 all: build_test run_test
 
-CPP_DIR=pjlib pjlib-util pjnath pjmedia pjsip
+CPP_DIR=pjlib pjlib-util pjnath pjnat64 pjmedia pjsip
 
 .PHONY: build_test distclean rm_build_mak build_mak everything pjlib_test pjlib_util_test pjnath_test pjsip_test cpp_prep cpp_test cpp_post pjsua_test
 

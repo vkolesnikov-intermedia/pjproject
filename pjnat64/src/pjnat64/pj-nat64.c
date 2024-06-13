@@ -1,6 +1,3 @@
-
-#include <pj/types.h>
-
 #include <pjsip-ua/sip_inv.h>
 #include <pjsip/sip_types.h>
 
@@ -1203,7 +1200,7 @@ static pjsip_module ipv6_module = {
     NULL,                             /* on_tsx_state()   */
 };
 
-pj_status_t pj_nat64_enable_rewrite_module()
+PJ_DEF(pj_status_t) pj_nat64_enable_rewrite_module()
 {
     pjsip_endpoint *endpt = pjsua_get_pjsip_endpt();
     pj_status_t result;
@@ -1235,7 +1232,7 @@ pj_status_t pj_nat64_enable_rewrite_module()
     return result;
 }
 
-pj_status_t pj_nat64_disable_rewrite_module()
+PJ_DEF(pj_status_t) pj_nat64_disable_rewrite_module()
 {
     pjsip_endpoint *endpt = pjsua_get_pjsip_endpt();
     pj_status_t result;
@@ -1259,7 +1256,7 @@ pj_status_t pj_nat64_disable_rewrite_module()
  * Enable/disable NAT64 features
  *
 **/
-void pj_nat64_set_enable(pj_bool_t yesno)
+PJ_DEF(void) pj_nat64_set_enable(pj_bool_t yesno)
 {
     mod_enable = yesno;
 }
@@ -1268,7 +1265,7 @@ void pj_nat64_set_enable(pj_bool_t yesno)
  * Dump address
  *
 **/
-void pj_nat64_dump()
+PJ_DEF(void) pj_nat64_dump()
 {
     addr_dump("HPBX", &hpbx);
     addr_dump("ACC", &acc);
@@ -1278,7 +1275,7 @@ void pj_nat64_dump()
  * Set HPBX server IPv4 address
  *
 **/
-void pj_nat64_set_server_addr(pj_str_t *addr, int port)
+PJ_DEF(void) pj_nat64_set_server_addr(pj_str_t *addr, int port)
 {
     if (mod_pool == NULL) {
         PJ_LOG(1, (THIS_FILE, "No module memory pool"));
@@ -1307,7 +1304,7 @@ void pj_nat64_set_server_addr(pj_str_t *addr, int port)
     pj_nat64_dump();
 }
 
-void pj_nat64_set_server_addr6(pj_str_t *addr, int port)
+PJ_DEF(void) pj_nat64_set_server_addr6(pj_str_t *addr, int port)
 {
     if (mod_pool == NULL) {
         PJ_LOG(1, (THIS_FILE, "No module memory pool"));
@@ -1336,7 +1333,7 @@ void pj_nat64_set_server_addr6(pj_str_t *addr, int port)
     pj_nat64_dump();
 }
 
-void pj_nat64_set_client_addr(pj_str_t *addr, int port)
+PJ_DEF(void) pj_nat64_set_client_addr(pj_str_t *addr, int port)
 {
     if (mod_pool == NULL) {
         PJ_LOG(1, (THIS_FILE, "No module memory pool"));
@@ -1365,7 +1362,7 @@ void pj_nat64_set_client_addr(pj_str_t *addr, int port)
     pj_nat64_dump();
 }
 
-void pj_nat64_set_client_addr6(pj_str_t *addr, int port)
+PJ_DEF(void) pj_nat64_set_client_addr6(pj_str_t *addr, int port)
 {
     if (mod_pool == NULL) {
         PJ_LOG(1, (THIS_FILE, "No module memory pool"));
@@ -1398,7 +1395,7 @@ void pj_nat64_set_client_addr6(pj_str_t *addr, int port)
  * Debug options
  *
  */
-void pj_nat64_set_debug(pj_bool_t yesno)
+PJ_DEF(void) pj_nat64_set_debug(pj_bool_t yesno)
 {
     mod_debug = yesno;
 }

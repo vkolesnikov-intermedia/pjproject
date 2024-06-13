@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\pjlib\include,..\..\pjlib-util\include,..\..\pjmedia\include,..\..\pjsip\include,../../pjnath/include"
+				AdditionalIncludeDirectories="..\..\pjlib\include,..\..\pjlib-util\include,..\..\pjmedia\include,..\..\pjsip\include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;PY_PJSUA_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -147,7 +147,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\pjlib\include,..\..\pjlib-util\include,..\..\pjmedia\include,..\..\pjsip\include,../../pjnath/include"
+				AdditionalIncludeDirectories="..\..\pjlib\include,..\..\pjlib-util\include,..\..\pjmedia\include,..\..\pjsip\include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;PY_PJSUA_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"

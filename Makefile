@@ -56,13 +56,14 @@ doc:
 	done
 
 clean-doc:
-	for dir in pjlib pjlib-util pjnath pjmedia pjsip; do \
+	for dir in pjlib pjlib-util pjnath pjnat64 pjmedia pjsip; do \
 		rm -rf $${dir}/docs/$${PJ_VERSION}; \
 	done
 
 LIBS = 	pjlib/lib/libpj-$(TARGET_NAME).a \
 	pjlib-util/lib/libpjlib-util-$(TARGET_NAME).a \
 	pjnath/lib/libpjnath-$(TARGET_NAME).a \
+	pjnat64/lib/libpjnat64-$(TARGET_NAME).a \
 	pjmedia/lib/libpjmedia-$(TARGET_NAME).a \
 	pjmedia/lib/libpjmedia-audiodev-$(TARGET_NAME).a \
 	pjmedia/lib/libpjmedia-codec-$(TARGET_NAME).a \
@@ -138,7 +139,7 @@ install:
 	    cp -af $(APP_LIB_FILES) $(DESTDIR)$(libdir)/; \
 	fi
 	mkdir -p $(DESTDIR)$(includedir)/
-	for d in pjlib pjlib-util pjnath pjmedia pjsip; do \
+	for d in pjlib pjlib-util pjnath pjnat64 pjmedia pjsip; do \
 		cp -RLf $$d/include/* $(DESTDIR)$(includedir)/; \
 	done
 	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
@@ -153,7 +154,7 @@ install:
 uninstall:
 	$(RM) $(DESTDIR)$(libdir)/pkgconfig/libpjproject.pc
 	rmdir $(DESTDIR)$(libdir)/pkgconfig 2> /dev/null || true
-	for d in pjlib pjlib-util pjnath pjmedia pjsip; do \
+	for d in pjlib pjlib-util pjnath pjnat64 pjmedia pjsip; do \
 		for f in $$d/include/*; do \
 			$(RM) -r "$(DESTDIR)$(includedir)/`basename $$f`"; \
 		done; \

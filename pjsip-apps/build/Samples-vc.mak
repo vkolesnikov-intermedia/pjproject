@@ -28,6 +28,7 @@ BUILD_FLAGS = /Ox /MD /DNDEBUG /W4
 PJLIB_LIB = ..\..\pjlib\lib\pjlib-$(TARGET)$(LIBEXT)
 PJLIB_UTIL_LIB = ..\..\pjlib-util\lib\pjlib-util-$(TARGET)$(LIBEXT)
 PJNATH_LIB = ..\..\pjnath\lib\pjnath-$(TARGET)$(LIBEXT)
+PJNAT64_LIB = ..\..\pjnat64\lib\pjnat64-$(TARGET)$(LIBEXT)
 PJMEDIA_LIB = ..\..\pjmedia\lib\pjmedia-$(TARGET)$(LIBEXT)
 PJMEDIA_CODEC_LIB = ..\..\pjmedia\lib\pjmedia-codec-$(TARGET)$(LIBEXT)
 PJMEDIA_AUDIODEV_LIB = ..\..\pjmedia\lib\pjmedia-audiodev-$(TARGET)$(LIBEXT)
@@ -55,7 +56,7 @@ THIRD_PARTY_LIBS = $(GSM_LIB) $(ILBC_LIB) $(RESAMPLE_LIB) \
 LIBS = $(PJSUA_LIB_LIB) $(PJSIP_UA_LIB) $(PJSIP_SIMPLE_LIB) \
 	  $(PJSIP_LIB) $(PJMEDIA_CODEC_LIB) $(PJMEDIA_AUDIODEV_LIB) \
 	  $(PJMEDIA_VIDEODEV_LIB) \
-	  $(PJMEDIA_LIB) $(PJNATH_LIB) $(PJLIB_UTIL_LIB) $(PJLIB_LIB) \
+	  $(PJMEDIA_LIB) $(PJNATH_LIB) $(PJNAT64_LIB) $(PJLIB_UTIL_LIB) $(PJLIB_LIB) \
 	  $(THIRD_PARTY_LIBS)
 
 CFLAGS 	= $(TARGET_FLAGS) \

@@ -270,6 +270,7 @@ ifeq ($(PJ_SHARED_LIBRARIES),)
 export PJLIB_LDLIB := -lpj-$(TARGET_NAME)
 export PJLIB_UTIL_LDLIB := -lpjlib-util-$(TARGET_NAME)
 export PJNATH_LDLIB := -lpjnath-$(TARGET_NAME)
+export PJNAT64_LDLIB := -lpjnat64-$(TARGET_NAME)
 export PJMEDIA_AUDIODEV_LDLIB := -lpjmedia-audiodev-$(TARGET_NAME)
 export PJMEDIA_VIDEODEV_LDLIB := -lpjmedia-videodev-$(TARGET_NAME)
 export PJMEDIA_LDLIB := -lpjmedia-$(TARGET_NAME)
@@ -283,6 +284,7 @@ else
 export PJLIB_LDLIB := -lpj
 export PJLIB_UTIL_LDLIB := -lpjlib-util
 export PJNATH_LDLIB := -lpjnath
+export PJNAT64_LDLIB := -lpjnat64
 export PJMEDIA_AUDIODEV_LDLIB := -lpjmedia-audiodev
 export PJMEDIA_VIDEODEV_LDLIB := -lpjmedia-videodev
 export PJMEDIA_LDLIB := -lpjmedia

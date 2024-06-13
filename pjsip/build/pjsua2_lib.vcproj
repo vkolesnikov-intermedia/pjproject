@@ -60,7 +60,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -118,7 +118,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -184,7 +184,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -251,7 +251,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 				DebugInformationFormat="3"
@@ -310,7 +310,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -376,7 +376,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -442,7 +442,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -500,7 +500,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -566,7 +566,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -633,7 +633,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -691,7 +691,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -757,7 +757,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -823,7 +823,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -881,7 +881,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -947,7 +947,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1014,7 +1014,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 				DebugInformationFormat="3"
@@ -1073,7 +1073,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1139,7 +1139,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1205,7 +1205,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1263,7 +1263,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1329,7 +1329,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1396,7 +1396,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1454,7 +1454,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1520,7 +1520,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1586,7 +1586,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1644,7 +1644,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1710,7 +1710,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1777,7 +1777,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 				DebugInformationFormat="3"
@@ -1836,7 +1836,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1902,7 +1902,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -1968,7 +1968,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2026,7 +2026,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2092,7 +2092,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2159,7 +2159,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2217,7 +2217,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2283,7 +2283,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2349,7 +2349,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2415,7 +2415,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2481,7 +2481,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2547,7 +2547,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2613,7 +2613,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2679,7 +2679,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2745,7 +2745,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2811,7 +2811,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2877,7 +2877,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -2943,7 +2943,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -3009,7 +3009,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>
@@ -3075,7 +3075,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include"
+				AdditionalIncludeDirectories="../include,../../pjmedia/include,../../pjlib-util/include,../../pjlib/include,../../pjnath/include,../../pjnat64/include"
 				PreprocessorDefinitions="_LIB;"
 				PrecompiledHeaderFile=""
 			/>

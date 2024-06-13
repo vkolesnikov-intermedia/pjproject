@@ -1,7 +1,7 @@
 include build.mak
 include build/host-$(HOST_NAME).mak
 
-DIRS = pjlib pjlib-util pjnath pjmedia pjsip
+DIRS = pjlib pjlib-util pjnath pjnat64 pjmedia pjsip
 
 ifdef MINSIZE
 MAKE_FLAGS := MINSIZE=1

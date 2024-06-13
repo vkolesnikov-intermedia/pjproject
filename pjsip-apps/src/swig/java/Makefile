@@ -5,7 +5,8 @@ SWIG_FLAGS=-I../../../../pjlib/include \
 		   -I../../../../pjlib-util/include \
 		   -I../../../../pjmedia/include \
 		   -I../../../../pjsip/include \
-		   -I../../../../pjnath/include -c++ 
+		   -I../../../../pjnath/include \
+		   -I../../../../pjnat64/include -c++
 SRC_DIR=../../../../pjsip/include
 SRCS=$(SRC_DIR)/pjsua2/endpoint.hpp $(SRC_DIR)/pjsua2/types.hpp
 
@@ -154,8 +155,8 @@ else
 endif
 
 # Build settings
-MY_CFLAGS	 := $(PJ_CXXFLAGS) $(MY_JNI_CFLAGS) $(CFLAGS)
-MY_LDFLAGS	 := $(PJ_LDXXFLAGS) $(PJ_LDXXLIBS) $(MY_JNI_LDXXLIBS) $(MY_JNI_LDFLAGS) $(LDFLAGS)
+MY_CFLAGS	 := $(PJ_CXXFLAGS) -I$(PJDIR)/pjnat64/include $(MY_JNI_CFLAGS) $(CFLAGS)
+MY_LDFLAGS	 := $(PJ_LDXXFLAGS) -L$(PJDIR)/pjnat64/lib $(PJ_LDXXLIBS) -Wl,--whole-archive $(PJNAT64_LDLIB) -Wl,--no-whole-archive $(MY_JNI_LDXXLIBS) $(MY_JNI_LDFLAGS) $(LDFLAGS)
 MY_PACKAGE_NAME	 := org.pjsip.pjsua2
 ifeq ($(OS),android)
   MY_PACKAGE_PATH  := android/pjsua2/src/main/java/$(subst .,/,$(MY_PACKAGE_NAME))
