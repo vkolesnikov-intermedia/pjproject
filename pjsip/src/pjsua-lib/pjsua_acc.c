@@ -664,6 +664,8 @@ PJ_DEF(void*) pjsua_acc_get_user_data(pjsua_acc_id acc_id)
  */
 PJ_DEF(pj_status_t) pjsua_acc_del(pjsua_acc_id acc_id)
 {
+    PJ_ASSERT_RETURN(acc_id > 10, NULL);
+
     pjsua_acc *acc;
     unsigned i;
 

@@ -2572,12 +2572,15 @@ PJ_DEF(pjsip_dialog_cap_status) pjsua_call_remote_has_cap(
 PJ_DEF(pj_status_t) pjsua_call_set_user_data( pjsua_call_id call_id,
                                               void *user_data)
 {
+    printf("!!!??? call id = %d", call_id);
+    printf("!!!??? pjsua_var.ua_cfg.max_calls = %d", (int)pjsua_var.ua_cfg.max_calls);
+
     PJ_ASSERT_RETURN(call_id>=0 && call_id<(int)pjsua_var.ua_cfg.max_calls,
                      PJ_EINVAL);
     pjsua_var.calls[call_id].user_data = user_data;
 
     return PJ_SUCCESS;
-}
+} // !!! pjsua_call_set_user_data
 
 
 /*

@@ -1518,7 +1518,7 @@ void Endpoint::on_call_replace_request2(pjsua_call_id call_id,
 }
 
 void Endpoint::on_call_replaced(pjsua_call_id old_call_id,
-                                pjsua_call_id new_call_id)
+                                pjsua_call_id new_call_id) // !!! on_call_replaced
 {
     /* Lookup the new call first, to avoid Call::lookup() overwriting
      * Call.id (to the new Call).

@@ -3,7 +3,7 @@ name: Linux release
 on:
   push:
     tags:
-      - '*'
+      - 'qqqq'
 
 env:
   RELEASE_ARCHIVE_NAME: linux-release
