@@ -31,7 +31,7 @@ jobs:
         run: |
           mkdir -p output
           cd /home
-          ./build
+          CFLAGS="-DNDEBUG" ./build
       - 
         name: Create asset
         if: always()
