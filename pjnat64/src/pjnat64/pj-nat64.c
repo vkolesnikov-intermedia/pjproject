@@ -16,6 +16,8 @@
 # define USE_RFC6052 1
 #endif
 
+#define INVALID_PORT -1
+
 /* Interface */
 
 static void patch_sdp_attr(pj_pool_t *pool, pjmedia_sdp_media *media, pjmedia_sdp_attr *attr, pj_str_t addr_type, pj_str_t addr);
@@ -63,14 +65,15 @@ static struct addr acc;
 **/
 static void addr_init(struct addr *adr)
 {
+    PJ_LOG(4, (THIS_FILE, "Initialize address structure at %p", adr));
     /* Initialize IN4 addr */
     adr->in4_addr.slen = 0;
     adr->in4_addr.ptr = NULL;
-    adr->in4_port = -1;
+    adr->in4_port = INVALID_PORT;
     /* Initialize IN6 addr */
     adr->in6_addr.slen = 0;
     adr->in6_addr.ptr = NULL;
-    adr->in6_port = -1;
+    adr->in6_port = INVALID_PORT;
 }
 
 static void addr_dump(const char *title, struct addr *adr)
@@ -916,9 +919,9 @@ static void patch_contact_ipv6_with_ipv4(pjsip_tx_data *tdata, pjsip_msg *msg)
         map_ipv6_with_ipv4(pool, &map_addr, &sip_uri->host);
         /* Step 3. Mapping routine */
         if (map_addr.slen > 0) {
-            PJ_LOG(4, (THIS_FILE, "TX patch Contact addr '%.*s':%d -> '%.*s':%d",
-                (int)sip_uri->host.slen, sip_uri->host.ptr, sip_uri->port,
-                (int)map_addr.slen, map_addr.ptr, sip_uri->port
+            PJ_LOG(4, (THIS_FILE, "TX patch Contact addr %.*s -> %.*s (use mapping method)",
+                (int)sip_uri->host.slen, sip_uri->host.ptr,
+                (int)map_addr.slen, map_addr.ptr,
             ));
             sip_uri->host.slen = map_addr.slen;
             sip_uri->host.ptr = map_addr.ptr;
@@ -937,12 +940,16 @@ static void patch_contact_ipv6_with_ipv4(pjsip_tx_data *tdata, pjsip_msg *msg)
         }
         //
         if (acc.in4_addr.slen > 0) {
-            PJ_LOG(4, (THIS_FILE, "TX patch Contact addr use account '%.*s':%d (update port only on value >0)",
-                (int)acc.in4_addr.slen, acc.in4_addr.ptr, acc.in4_port
+            PJ_LOG(4, (THIS_FILE, "TX patch Contact addr %.*s -> %.*s (use replace method)",
+                (int)sip_uri->host.slen, sip_uri->host.ptr,
+                (int)acc.in4_addr.slen, acc.in4_addr.ptr
             ));
             sip_uri->host.slen = acc.in4_addr.slen;
             sip_uri->host.ptr = acc.in4_addr.ptr;
-            if (acc.in4_port > 0) {
+            if (acc.in4_port != INVALID_PORT) {
+                PJ_LOG(4, (THIS_FILE, "TX patch Contact port %d -> %d (use replace method)",
+                    sip_uri->port, acc.in4_port
+                ));
                 sip_uri->port = acc.in4_port;
             }
             /* Update patch count */
@@ -959,7 +966,7 @@ static void patch_contact_ipv6_with_ipv4(pjsip_tx_data *tdata, pjsip_msg *msg)
         }
         //
         pj_str_t map_addr = { .slen = 8, .ptr = "10.0.0.1" };
-        PJ_LOG(4, (THIS_FILE, "TX patch Contact addr '%.*s' -> '%.*s' (failback)",
+        PJ_LOG(4, (THIS_FILE, "TX patch Contact addr %.*s -> %.*s (use common method)",
             (int)sip_uri->host.slen, sip_uri->host.ptr,
             (int)map_addr.slen, map_addr.ptr
         ));
@@ -985,13 +992,15 @@ static void search_ipv4_client_address(pjsip_rx_data *rdata)
     pjsip_hdr *hdr = (pjsip_hdr *)msg->hdr.next;
     pjsip_hdr *end = &msg->hdr;
 
-    /* Step 1. Process response on REGISTER */
+    PJ_LOG(4, (THIS_FILE, "RX search HPBX client IPv4 addr"));
+
+    /* Step 1. Process REGISTER response */
     if ((msg->type == PJSIP_RESPONSE_MSG) && (cseq->method.id == PJSIP_REGISTER_METHOD)) {
     } else {
         return;
     }
 
-    /* Step 2. Search "Via" header on response */
+    /* Step 2. Search bottom "Via" header on response */
     for (; hdr != end; hdr = hdr->next) {
         if (hdr->type == PJSIP_H_VIA) {
             pjsip_via_hdr *via_hdr = (pjsip_via_hdr *)hdr;
@@ -999,8 +1008,12 @@ static void search_ipv4_client_address(pjsip_rx_data *rdata)
         }
     }
     if (cur_via_hdr != NULL) {
+        int port = INVALID_PORT;
         pj_str_t addr = cur_via_hdr->recvd_param;
-        int port = cur_via_hdr->rport_param;
+        /* "rport" parameter, 0 to specify without port number, -1 means doesn't exist. */
+        if (cur_via_hdr->rport_param > 0) {
+            port = cur_via_hdr->rport_param;
+        }
         pj_nat64_set_client_addr(&addr, port);
     }
 
@@ -1014,6 +1027,8 @@ static void search_ipv4_server_address(pjsip_rx_data *rdata)
 {
     pjsip_msg *msg = rdata->msg_info.msg;
     pjsip_cseq_hdr *cseq = rdata->msg_info.cseq;
+
+    PJ_LOG(4, (THIS_FILE, "RX search HPBX server IPv4 addr"));
 
     /* Step 1. Process INVITE request */
     if ((msg->type == PJSIP_REQUEST_MSG) && (cseq->method.id == PJSIP_INVITE_METHOD)) {
@@ -1029,7 +1044,7 @@ static void search_ipv4_server_address(pjsip_rx_data *rdata)
         if (sip_uri == NULL) {
             return;
         }
-        pj_nat64_set_server_addr(&sip_uri->host, -1);
+        pj_nat64_set_server_addr(&sip_uri->host, INVALID_PORT);
     }
 
     /* Step 2. Process INVITE response */
@@ -1046,7 +1061,7 @@ static void search_ipv4_server_address(pjsip_rx_data *rdata)
         if (sip_uri == NULL) {
             return;
         }
-        pj_nat64_set_server_addr(&sip_uri->host, -1);
+        pj_nat64_set_server_addr(&sip_uri->host, INVALID_PORT);
     }
 
 }
@@ -1057,7 +1072,11 @@ static void search_ipv4_server_address(pjsip_rx_data *rdata)
 **/
 static void search_ipv6_client_address(pjsip_rx_data *rdata)
 {
+
+    PJ_LOG(4, (THIS_FILE, "RX search HPBX client IPv6 addr"));
+
     // TODO - Not yet implemented...
+
 }
 
 /**
@@ -1066,11 +1085,16 @@ static void search_ipv6_client_address(pjsip_rx_data *rdata)
 **/
 static void search_ipv6_server_address(pjsip_rx_data *rdata)
 {
+
+    PJ_LOG(4, (THIS_FILE, "RX search HPBX server IPv6 addr"));
+
     /* Step 1. Update HPBX server IPv6 address */
     pj_str_t addr;
     pj_cstr(&addr, rdata->pkt_info.src_name);
+
     // TODO - check IPv6 address...
-    pj_nat64_set_server_addr6(&addr, -1);
+    pj_nat64_set_server_addr6(&addr, INVALID_PORT);
+
 }
 
 /**
@@ -1110,7 +1134,6 @@ static pj_bool_t ipv6_mod_on_rx(pjsip_rx_data *rdata)
     modern_sip_msg_dump("RX source SIP message", rdata->msg_info.msg);
 
     /* Step 2. Peek HPBX server address */
-    PJ_LOG(4, (THIS_FILE, "RX search HPBX server addr"));
     search_ipv4_client_address(rdata);
     search_ipv6_client_address(rdata);
     search_ipv4_server_address(rdata);
@@ -1223,7 +1246,7 @@ PJ_DEF(pj_status_t) pj_nat64_enable_rewrite_module()
 
         /* Step 3. Set random account address */
         pj_str_t addr = { .ptr = "10.0.0.1", .slen = 8 };
-        pj_nat64_set_client_addr(&addr, -1);
+        pj_nat64_set_client_addr(&addr, INVALID_PORT);
     }
 
     /* Step 2. Register module */
@@ -1267,8 +1290,8 @@ PJ_DEF(void) pj_nat64_set_enable(pj_bool_t yesno)
 **/
 PJ_DEF(void) pj_nat64_dump()
 {
-    addr_dump("HPBX", &hpbx);
-    addr_dump("ACC", &acc);
+    addr_dump("Server (HPBX): ", &hpbx);
+    addr_dump("Client ( UAC): ", &acc);
 }
 
 /**
@@ -1277,118 +1300,177 @@ PJ_DEF(void) pj_nat64_dump()
 **/
 PJ_DEF(void) pj_nat64_set_server_addr(pj_str_t *addr, int port)
 {
+    pj_bool_t updated = PJ_FALSE;
+
+    /* Step 0. Validate operating environemnt */
     if (mod_pool == NULL) {
         PJ_LOG(1, (THIS_FILE, "No module memory pool"));
         return;
     }
+
     /* Step 1. Check arguments*/
-    if (addr == NULL) {
-        return;
+    if ((addr != NULL) && (addr->slen == 0) && (addr->ptr == NULL)) {
+        if (0 != pj_strcmp(&hpbx.in4_addr, addr)) {
+            /* Step 1. Debug message */
+            PJ_LOG(4, (THIS_FILE, "NAT64 update HPBX IN4 address %.*s -> %.*s",
+                hpbx.in4_addr.slen, hpbx.in4_addr.ptr,
+                addr->slen, addr->ptr
+            ));
+            /* Step 2. Update HPBX server addr value */
+            pj_strdup_with_null(mod_pool, &hpbx.in4_addr, addr);
+            /* Step 3. Mark update */
+            updated = PJ_TRUE;
+        }
     }
-    if ((addr->slen == 0) || (addr->ptr == NULL)) {
-        return;
-    }
+
     /* Step 2. Check change exists */
-    if (0 == pj_strcmp(&hpbx.in4_addr, addr)) {
-        return;
+    if (hpbx.in4_port != port) {
+        /* Step 1. Debug message */
+        PJ_LOG(4, (THIS_FILE, "NAT64 update HPBX IN4 port %d -> %d",
+            hpbx.in4_port, port
+        ));
+        /* Step 2. Update HPBX server addr value */
+        hpbx.in4_port = port;
+        /* Step 3. Mark update */
+        updated = PJ_TRUE;
     }
-    /* Step 3. Debug message */
-    PJ_LOG(4, (THIS_FILE, "NAT64 update HPBX IN4 address '%.*s':%d -> '%.*s':%d",
-        hpbx.in4_addr.slen, hpbx.in4_addr.ptr, hpbx.in4_port,
-        addr->slen, addr->ptr, port
-    ));
-    /* Step 4. Update HPBX server addr value */
-    pj_strdup_with_null(mod_pool, &hpbx.in4_addr, addr);
-    hpbx.in4_port = port;
-    /* Step 5. Dump maps */
-    pj_nat64_dump();
+
+    /* Step 3. Dump maps */
+    if (updated) {
+        pj_nat64_dump();
+    }
+
 }
 
 PJ_DEF(void) pj_nat64_set_server_addr6(pj_str_t *addr, int port)
 {
+    pj_bool_t updated = PJ_FALSE;
+
+    /* Step 0. Validate operating environemnt */
     if (mod_pool == NULL) {
         PJ_LOG(1, (THIS_FILE, "No module memory pool"));
         return;
     }
+
     /* Step 1. Check arguments*/
-    if (addr == NULL) {
-        return;
+    if ((addr != NULL) && (addr->slen != 0) && (addr->ptr != NULL)) {
+        if (0 != pj_strcmp(&hpbx.in6_addr, addr)) {
+            /* Step 1. Debug message */
+            PJ_LOG(4, (THIS_FILE, "NAT64 update HPBX IN6 address '%.*s' -> '%.*s'",
+                hpbx.in6_addr.slen, hpbx.in6_addr.ptr,
+                addr->slen, addr->ptr
+            ));
+            /* Step 2. Update HPBX server addr value */
+            pj_strdup_with_null(mod_pool, &hpbx.in6_addr, addr);
+            /* Step 3. Mark updated */
+            updated = PJ_TRUE;
+        }
     }
-    if ((addr->slen == 0) || (addr->ptr == NULL)) {
-        return;
+
+    /* Step 2. Check arguments*/
+    if (hpbx.in6_port != port) {
+        /* Step 1. Debug message */
+        PJ_LOG(4, (THIS_FILE, "NAT64 update HPBX IN6 port %d -> %d",
+            hpbx.in6_port, port
+        ));
+        /* Step 2. Update HPBX server addr value */
+        hpbx.in6_port = port;
+        /* Step 3. Mark updated */
+        updated = PJ_TRUE;
     }
-    /* Step 2. Check change exists */
-    if (0 == pj_strcmp(&hpbx.in6_addr, addr)) {
-        return;
-    }
-    /* Step 3. Debug message */
-    PJ_LOG(4, (THIS_FILE, "NAT64 update HPBX IN6 address '%.*s':%d -> '%.*s':%d",
-        hpbx.in6_addr.slen, hpbx.in6_addr.ptr, hpbx.in6_port,
-        addr->slen, addr->ptr, port
-    ));
-    /* Step 4. Update HPBX server addr value */
-    pj_strdup_with_null(mod_pool, &hpbx.in6_addr, addr);
 
     /* Step 5. Dump maps */
-    pj_nat64_dump();
+    if (updated) {
+        pj_nat64_dump();
+    }
+
 }
 
 PJ_DEF(void) pj_nat64_set_client_addr(pj_str_t *addr, int port)
 {
+    pj_bool_t updated = PJ_FALSE;
+
+    /* Step 0. Validate operating environemnt */
     if (mod_pool == NULL) {
         PJ_LOG(1, (THIS_FILE, "No module memory pool"));
         return;
     }
-    /* Step 1. Check arguments */
-    if (addr == NULL) {
-        return;
+
+    /* Step 1. Setup network address */
+    if ((addr != NULL) && (addr->slen != 0) && (addr->ptr != NULL)) {
+        if (0 != pj_strcmp(&acc.in4_addr, addr)) {
+            /* Step 1. Debug message */
+            PJ_LOG(4, (THIS_FILE, "NAT64 update ACC IN4 address '%.*s' -> '%.*s'",
+                (int)acc.in4_addr.slen, acc.in4_addr.ptr,
+                (int)addr->slen, addr->ptr
+            ));
+            /* Step 2. Update HPBX server addr value */
+            pj_strdup_with_null(mod_pool, &acc.in4_addr, addr);
+            /* Step 3. Make update */
+            updated = PJ_TRUE;
+        }
     }
-    if ((addr->slen == 0) || (addr->ptr == NULL)) {
-        return;
+
+    /* Step 2. Setup network port */
+    if (acc.in4_port != port) {
+        /* Step 1. Debug message */
+        PJ_LOG(4, (THIS_FILE, "NAT64 update ACC IN4 port %d -> %d",
+            acc.in4_port, port
+        ));
+        /* Step 2. Update HPBX server port value */
+        acc.in4_port = port;
+        /* Step 3. Make update */
+        updated = PJ_TRUE;
     }
-    /* Step 2. Check change exists */
-    if (0 == pj_strcmp(&acc.in4_addr, addr)) {
-        return;
+
+    /* Step 3. Dump on update */
+    if (updated) {
+        pj_nat64_dump();
     }
-    /* Step 3. Debug message */
-    PJ_LOG(4, (THIS_FILE, "NAT64 update ACC IN4 address '%.*s':%d -> '%.*s':%d",
-        acc.in4_addr.slen, acc.in4_addr.ptr, acc.in4_port,
-        addr->slen, addr->ptr, port
-    ));
-    /* Step 4. Update HPBX server addr value */
-    pj_strdup_with_null(mod_pool, &acc.in4_addr, addr);
-    acc.in4_port = port;
-    /* Step 5. Dump maps */
-    pj_nat64_dump();
 }
 
 PJ_DEF(void) pj_nat64_set_client_addr6(pj_str_t *addr, int port)
 {
+    pj_bool_t updated = PJ_FALSE;
+
+    /* Step 0. Validate operating environemnt */
     if (mod_pool == NULL) {
         PJ_LOG(1, (THIS_FILE, "No module memory pool"));
         return;
     }
-    /* Step 1. Check arguments */
-    if (addr == NULL) {
-        return;
+
+    /* Step 1. Update address */
+    if ((addr != NULL) && (addr->slen != 0) && (addr->ptr != NULL)) {
+        if (0 != pj_strcmp(&acc.in6_addr, addr)) {
+            /* Step 1. Debug message */
+            PJ_LOG(4, (THIS_FILE, "NAT64 update ACC IN6 address '%.*s' -> '%.*s'",
+                acc.in6_addr.slen, acc.in6_addr.ptr,
+                addr->slen, addr->ptr
+            ));
+            /* Step 2. Update HPBX server addr value */
+            pj_strdup_with_null(mod_pool, &acc.in6_addr, addr);
+            /* Step 3. Makr updated */
+            updated = PJ_TRUE;
+        }
     }
-    if ((addr->slen == 0) || (addr->ptr == NULL)) {
-        return;
+
+    /* Step 2. Update port */
+    if (acc.in6_port != port) {
+        /* Step 1. Debug message */
+        PJ_LOG(4, (THIS_FILE, "NAT64 update ACC IN6 port %d -> %d",
+            acc.in6_port, port
+        ));
+        /* Step 2. Update HPBX server port value */
+        acc.in6_port = port;
+        /* Step 3. Makr updated */
+        updated = PJ_TRUE;
     }
-    /* Step 2. Check change exists */
-    if (0 == pj_strcmp(&acc.in6_addr, addr)) {
-        return;
+
+    /* Step 3. Dump maps */
+    if (updated) {
+        pj_nat64_dump();
     }
-    /* Step 3. Debug message */
-    PJ_LOG(4, (THIS_FILE, "NAT64 update ACC IN6 address '%.*s':%d -> '%.*s':%d",
-        acc.in6_addr.slen, acc.in6_addr.ptr, acc.in6_port,
-        addr->slen, addr->ptr, port
-    ));
-    /* Step 4. Update HPBX server addr value */
-    pj_strdup_with_null(mod_pool, &acc.in6_addr, addr);
-    acc.in6_port = port;
-    /* Step 5. Dump maps */
-    pj_nat64_dump();
+
 }
 
 /**
