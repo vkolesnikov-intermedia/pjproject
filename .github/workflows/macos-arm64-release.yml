@@ -3,7 +3,7 @@ name: MacOs arm64 release
 on:
   push:
     tags:
-      - '*'
+      - 'qqq'
 
 env:
   RELEASE_ARCHIVE_NAME: macOS-arm64-release

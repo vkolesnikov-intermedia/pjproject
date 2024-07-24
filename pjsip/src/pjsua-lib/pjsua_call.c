@@ -1566,7 +1566,12 @@ pj_bool_t pjsua_call_on_incoming(pjsip_rx_data *rdata)
     PJ_LOG(4,(THIS_FILE, "Incoming %s", rdata->msg_info.info));
     pj_log_push_indent();
 
-    PJSUA_LOCK();
+//    PJ_LOG(4,(THIS_FILE, "Incoming MUTEX OWNER before %s..", pjsua_var.mutex_owner->obj_name));
+
+    PJSUA_LOCK(); // get id lock
+
+//    PJ_LOG(4,(THIS_FILE, "Incoming MUTEX OWNER after %s..", pjsua_var.mutex_owner->obj_name));
+    PJ_LOG(4,(THIS_FILE, "Incoming MUTEX nesting after locking %d..", (int)pjsua_var.mutex_nesting_level));
 
     /* Find free call slot. */
     call_id = alloc_call_id();
@@ -1594,8 +1599,9 @@ pj_bool_t pjsua_call_on_incoming(pjsip_rx_data *rdata)
     /* Check INVITE request for Replaces header. If Replaces header is
      * present, the function will make sure that we can handle the request.
      */
-    status = pjsip_replaces_verify_request(rdata, &replaced_dlg, PJ_FALSE,
+    status = pjsip_replaces_verify_request(rdata, &replaced_dlg, PJ_FALSE, // !!!
                                            &response);
+
     if (status != PJ_SUCCESS) {
         /*
          * Something wrong with the Replaces header.
@@ -1693,7 +1699,9 @@ pj_bool_t pjsua_call_on_incoming(pjsip_rx_data *rdata)
         replaced_call = (pjsua_call*)replaced_dlg->mod_data[pjsua_var.mod.id];
         acc_id = call->acc_id = replaced_call->acc_id;
     } else {
-        acc_id = call->acc_id = pjsua_acc_find_for_incoming(rdata);
+        PJ_LOG(4,(THIS_FILE, "Incoming call: account count %d..", pjsua_var.acc_cnt));
+//        PJ_LOG(4,(THIS_FILE, "Incoming MUTEX OWNER get id %s..", pjsua_var.mutex_owner->obj_name));
+        acc_id = call->acc_id = pjsua_acc_find_for_incoming(rdata); // get id
         if (acc_id == PJSUA_INVALID_ID) {
             if (!pjsua_var.ua_cfg.ignore_unexpected_invites) {
 				ret_st_code = PJSIP_SC_TEMPORARILY_UNAVAILABLE;
@@ -2179,7 +2187,10 @@ pj_bool_t pjsua_call_on_incoming(pjsip_rx_data *rdata)
          * otherwise hangup the call with 480
          */
         if (pjsua_var.ua_cfg.cb.on_incoming_call) {
-            pjsua_var.ua_cfg.cb.on_incoming_call(acc_id, call_id, rdata);
+            PJ_LOG(4,(THIS_FILE, "Incoming call: account before  notify %d..", pjsua_var.acc_cnt));
+//            PJ_LOG(4,(THIS_FILE, "Incoming MUTEX OWNER notify %s..", pjsua_var.mutex_owner->obj_name));
+            PJ_LOG(4,(THIS_FILE, "Incoming MUTEX nesting before notify %d..", (int)pjsua_var.mutex_nesting_level));
+            pjsua_var.ua_cfg.cb.on_incoming_call(acc_id, call_id, rdata); // get id
 
             /* Notes:
              * - the call might be reset when it's rejected or hangup
@@ -2577,7 +2588,7 @@ PJ_DEF(pj_status_t) pjsua_call_set_user_data( pjsua_call_id call_id,
     pjsua_var.calls[call_id].user_data = user_data;
 
     return PJ_SUCCESS;
-}
+} // !!! pjsua_call_set_user_data
 
 
 /*

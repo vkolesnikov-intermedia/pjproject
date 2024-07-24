@@ -3,11 +3,11 @@ name: Build Android release
 on:
   push:
     tags:
-     - '*'
+      - '*'
 
 env:
   RELEASE_ARCHIVE_NAME: android-release
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,7 +15,7 @@ jobs:
       contents: write
       packages: read
     container: 
-      image: ghcr.io/intermedia-net/pjproject-android-builder:master
+      image: ghcr.io/vkolesnikov-intermedia/pjproject-android-builder:master
       volumes:
         - ${{ github.workspace }}/input:/home/tools/pjproject 
         - ${{ github.workspace }}/output:/home/output/pjsip-build-output

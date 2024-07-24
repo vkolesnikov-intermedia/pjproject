@@ -448,7 +448,7 @@ static pj_status_t initialize_acc(unsigned acc_id)
 
 
 /*
- * Add a new account to pjsua.
+ * Add a new account to pjsua. !!! add acc
  */
 PJ_DEF(pj_status_t) pjsua_acc_add( const pjsua_acc_config *cfg,
                                    pj_bool_t is_default,
@@ -645,7 +645,6 @@ PJ_DEF(pj_status_t) pjsua_acc_set_user_data(pjsua_acc_id acc_id,
     return PJ_SUCCESS;
 }
 
-
 /*
  * Retrieve arbitrary data associated with the account.
  */
@@ -674,9 +673,12 @@ PJ_DEF(pj_status_t) pjsua_acc_del(pjsua_acc_id acc_id)
     PJ_LOG(4,(THIS_FILE, "Deleting account %d..", acc_id));
     pj_log_push_indent();
 
+//    PJ_LOG(4,(THIS_FILE, "Deleting account MUTEX OWNER before %s..", pjsua_var.mutex_owner->obj_name));
     PJSUA_LOCK();
+//    PJ_LOG(4,(THIS_FILE, "Deleting account MUTEX OWNER after %s..", pjsua_var.mutex_owner->obj_name));
 
-    acc = &pjsua_var.acc[acc_id];
+
+acc = &pjsua_var.acc[acc_id];
 
     /* Cancel keep-alive timer, if any */
     if (acc->ka_timer.id) {
@@ -1299,7 +1301,7 @@ PJ_DEF(pj_status_t) pjsua_acc_modify( pjsua_acc_id acc_id,
     acc->cfg.reg_first_retry_interval = cfg->reg_first_retry_interval;
     acc->cfg.reg_retry_random_interval = cfg->reg_retry_random_interval;    
     acc->cfg.drop_calls_on_reg_fail = cfg->drop_calls_on_reg_fail;
-    acc->cfg.register_on_acc_add = cfg->register_on_acc_add;
+    acc->cfg.register_on_acc_add = cfg->register_on_acc_add; // kek
     if (acc->cfg.reg_delay_before_refresh != cfg->reg_delay_before_refresh) {
         acc->cfg.reg_delay_before_refresh = cfg->reg_delay_before_refresh;
         if (acc->regc != NULL)
