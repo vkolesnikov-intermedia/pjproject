@@ -125,7 +125,7 @@ _copy_to_destination() {
 
 if [ ! -e ${OPENSSL_VERSION}.tar.gz ]; then
     echo "Downloading ${OPENSSL_VERSION}.tar.gz"
-    curl -O -L -s https://www.openssl.org/source/${OPENSSL_VERSION}.tar.gz
+    curl -O -L -s https://github.com/openssl/openssl/releases/download/${OPENSSL_VERSION}/${OPENSSL_VERSION}.tar.gz
 else
     echo "Using ${OPENSSL_VERSION}.tar.gz"
 fi
