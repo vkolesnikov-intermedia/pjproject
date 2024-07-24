@@ -921,7 +921,7 @@ static void patch_contact_ipv6_with_ipv4(pjsip_tx_data *tdata, pjsip_msg *msg)
         if (map_addr.slen > 0) {
             PJ_LOG(4, (THIS_FILE, "TX patch Contact addr %.*s -> %.*s (use mapping method)",
                 (int)sip_uri->host.slen, sip_uri->host.ptr,
-                (int)map_addr.slen, map_addr.ptr,
+                (int)map_addr.slen, map_addr.ptr
             ));
             sip_uri->host.slen = map_addr.slen;
             sip_uri->host.ptr = map_addr.ptr;
