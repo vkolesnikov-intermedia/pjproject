@@ -2179,7 +2179,12 @@ pj_bool_t pjsua_call_on_incoming(pjsip_rx_data *rdata)
          * otherwise hangup the call with 480
          */
         if (pjsua_var.ua_cfg.cb.on_incoming_call) {
-            pjsua_var.ua_cfg.cb.on_incoming_call(acc_id, call_id, rdata);
+            /* For PJSUA2, avoid invoking this callback again when it has been
+             * * invoked from on_media_transport_created().
+             * */
+            if (call->incoming_data) {
+                pjsua_var.ua_cfg.cb.on_incoming_call(acc_id, call_id, rdata);
+            }
 
             /* Notes:
              * - the call might be reset when it's rejected or hangup
