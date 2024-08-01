@@ -459,6 +459,13 @@ static pj_bool_t mod_call_on_rx_request(pjsip_rx_data *rdata)
                 pjsip_response_addr res_addr;
 
                 pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
+//                if (tdata) {
+//                    char * remote_name = tdata->dest_info.name.ptr;
+//                    PJ_LOG(4,(THIS_FILE, remote_name, "[FOR-TLS] remote value in mod_call_on_rx_request"));
+//                } else {
+//                    PJ_LOG(4,( THIS_FILE,  "[FOR-TLS] no remote value"));
+//                }
+
                 status = pjsip_endpt_send_response(app.sip_endpt, &res_addr, tdata, 
                                           NULL, NULL);
                 if (status != PJ_SUCCESS) pjsip_tx_data_dec_ref(tdata);

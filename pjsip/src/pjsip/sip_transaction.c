@@ -2479,7 +2479,14 @@ static pj_status_t tsx_send_msg( pjsip_transaction *tsx,
     } else {
 
         tsx->transport_flag |= TSX_HAS_PENDING_TRANSPORT;
-        status = pjsip_endpt_send_response( tsx->endpt, &tsx->res_addr, 
+//        if (tdata) {
+//            char * remote_name = tdata->dest_info.name.ptr;
+//            PJ_LOG(4,(THIS_FILE, remote_name, "[FOR-TLS] in tsx_send_msg"));
+//        } else {
+//            PJ_LOG(4,( THIS_FILE,  "[FOR-TLS] no remote value"));
+//        }
+
+        status = pjsip_endpt_send_response( tsx->endpt, &tsx->res_addr,
                                             tdata, tsx, 
                                             &send_msg_callback);
         if (status == PJ_EPENDING)

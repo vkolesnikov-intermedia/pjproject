@@ -1243,7 +1243,7 @@ PJ_DEF(pj_status_t) pjsip_endpt_acquire_transport2(pjsip_endpoint *endpt,
                                                    pjsip_tx_data *tdata,
                                                    pjsip_transport **transport)
 {
-    return pjsip_tpmgr_acquire_transport2(endpt->transport_mgr, type, remote, 
+    return pjsip_tpmgr_acquire_transport2(endpt->transport_mgr, type, remote,
                                           addr_len, sel, tdata, transport);
 }
 

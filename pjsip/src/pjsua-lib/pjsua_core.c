@@ -619,6 +619,7 @@ static pj_bool_t options_on_rx_request(pjsip_rx_data *rdata)
 
     /* Send response */
     pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
+
     status = pjsip_endpt_send_response(pjsua_var.endpt, &res_addr, tdata, NULL, NULL);
     if (status != PJ_SUCCESS)
         pjsip_tx_data_dec_ref(tdata);

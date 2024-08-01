@@ -3635,7 +3635,7 @@ pj_status_t pjsua_acc_get_uac_addr(pjsua_acc_id acc_id,
         pj_uint16_t port;
 
         status = pjsip_get_dest_info((pjsip_uri *)sip_uri, NULL,
-                                     pool, &dinfo);
+                                     pool, &dinfo); // get destination info
         if (status != PJ_SUCCESS) {
             PJ_PERROR(4, (THIS_FILE, status, "Unable to use source local "
                           "TCP/TLS socket address for Contact"));
@@ -3736,7 +3736,7 @@ pj_status_t pjsua_acc_get_uac_addr(pjsua_acc_id acc_id,
             }
 
             pj_sockaddr_set_port(&ai[i].ai_addr, port);
-            status = pjsip_endpt_acquire_transport2(pjsua_var.endpt,
+            status = pjsip_endpt_acquire_transport2(pjsua_var.endpt, // !!! pjsip_endpt_acquire_transport2
                                                     dinfo.type,
                                                     &ai[i].ai_addr,
                                                     addr_len,

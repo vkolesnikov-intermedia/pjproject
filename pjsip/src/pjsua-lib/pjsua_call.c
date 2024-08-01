@@ -1605,7 +1605,10 @@ pj_bool_t pjsua_call_on_incoming(pjsip_rx_data *rdata)
             ret_st_code = response->msg->line.status.code;
 
             pjsip_get_response_addr(response->pool, rdata, &res_addr);
-            status = pjsip_endpt_send_response(pjsua_var.endpt, &res_addr, 
+
+            PJ_LOG(4,( THIS_FILE,  "[FOR-TLS] call on incoming"));
+
+            status = pjsip_endpt_send_response(pjsua_var.endpt, &res_addr,
                                                response, NULL, NULL);
             if (status != PJ_SUCCESS) pjsip_tx_data_dec_ref(response);
         } else {
@@ -1825,7 +1828,7 @@ pj_bool_t pjsua_call_on_incoming(pjsip_rx_data *rdata)
             ret_st_code = response->msg->line.status.code;
 
             pjsip_get_response_addr(response->pool, rdata, &res_addr);
-            status = pjsip_endpt_send_response(pjsua_var.endpt, &res_addr, 
+            status = pjsip_endpt_send_response(pjsua_var.endpt, &res_addr,
                                                response, NULL, NULL);
             if (status != PJ_SUCCESS) pjsip_tx_data_dec_ref(response);
 

@@ -1239,7 +1239,7 @@ PJ_DEF(pj_status_t) pjsip_inv_verify_request3(pjsip_rx_data *rdata,
                                               pjsip_endpoint *endpt,
                                               pjsip_tx_data **p_tdata)
 {
-    pjsip_msg *msg = NULL;
+    pjsip_msg *msg = NULL; // !!!
     pjsip_allow_hdr *allow = NULL;
     pjsip_supported_hdr *sup_hdr = NULL;
     pjsip_require_hdr *req_hdr = NULL;

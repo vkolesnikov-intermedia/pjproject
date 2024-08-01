@@ -652,7 +652,7 @@ PJ_DEF(pj_status_t) pjsip_tls_transport_start2( pjsip_endpoint *endpt,
     /* Register to transport manager */
     listener->endpt = endpt;
     listener->tpmgr = pjsip_endpt_get_tpmgr(endpt);
-    listener->factory.create_transport2 = lis_create_transport;
+    listener->factory.create_transport2 = lis_create_transport; // kekus
     listener->factory.destroy = lis_destroy;
 
 #if !(defined(PJSIP_TLS_TRANSPORT_DONT_CREATE_LISTENER) && \
@@ -1196,8 +1196,10 @@ static pj_status_t lis_create_transport(pjsip_tpfactory *factory,
     PJ_ASSERT_RETURN(pool != NULL, PJ_ENOMEM);
 
     /* Get remote host name from tdata */
-    if (tdata)
+    if (tdata) {
         remote_name = tdata->dest_info.name;
+        PJ_LOG(4,(remote_name.ptr, "[FOR-TLS] new remote name in lis_create_transport"));
+    }
     else
         pj_bzero(&remote_name, sizeof(remote_name));
 
@@ -1977,7 +1979,7 @@ static pj_bool_t on_connect_complete(pj_ssl_sock_t *ssock,
      * and destroy the transport.
      */
     if (ssl_info.verify_status && tls->verify_server) {
-        if (tls->close_reason == PJ_SUCCESS) 
+        if (tls->close_reason == PJ_SUCCESS)
             tls->close_reason = PJSIP_TLS_ECERTVERIF;
         pjsip_transport_shutdown(&tls->base);
     }

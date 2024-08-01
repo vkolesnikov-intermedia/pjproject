@@ -159,7 +159,7 @@ static pj_bool_t on_rx_response( pjsip_rx_data *rdata )
     }
 
     /* Forward response */
-    status = pjsip_endpt_send_response(global.endpt, &res_addr, tdata, 
+    status = pjsip_endpt_send_response(global.endpt, &res_addr, tdata,
                                        NULL, NULL);
     if (status != PJ_SUCCESS) {
         pjsip_tx_data_dec_ref(tdata);

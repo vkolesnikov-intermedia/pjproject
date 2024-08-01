@@ -783,6 +783,8 @@ PJ_DEF(pj_status_t) pjsip_endpt_create_cancel( pjsip_endpoint *endpt,
     pj_memcpy(&cancel_tdata->dest_info, &req_tdata->dest_info,
               sizeof(req_tdata->dest_info));
 
+
+
     /* Finally, copy the destination host name from the original request */
     pj_strdup(cancel_tdata->pool, &cancel_tdata->dest_info.name,
               &req_tdata->dest_info.name);
@@ -1479,7 +1481,7 @@ PJ_DEF(pj_status_t) pjsip_endpt_send_request_stateless(pjsip_endpoint *endpt,
                            tdata->dest_info.name.ptr));
                 pj_strdup(tdata->pool, &dest_info.addr.host,
                           &tdata->dest_info.name);
-                if (tdata->tp_sel.u.ip_ver == PJSIP_TPSELECTOR_USE_IPV4_ONLY) {
+               if (tdata->tp_sel.u.ip_ver == PJSIP_TPSELECTOR_USE_IPV4_ONLY) {
                     dest_info.type &= ~PJSIP_TRANSPORT_IPV6;
                 } else {
                     dest_info.type |= PJSIP_TRANSPORT_IPV6;
@@ -1794,6 +1796,7 @@ static void send_response_resolver_cb( pj_status_t status, void *token,
     }
 
     /* Only handle the first address resolved. */
+    PJ_LOG(4, (THIS_FILE,  " [FOR-TLS] send_response_resolver_cb"));
 
     /* Acquire transport. */
     status = pjsip_endpt_acquire_transport2(send_state->endpt, 
@@ -1877,13 +1880,22 @@ PJ_DEF(pj_status_t) pjsip_endpt_send_response( pjsip_endpoint *endpt,
             return status;
         }
     } else {
-        /* Copy the destination host name to TX data */
+
+           /* Copy the destination host name to TX data */
         if (!tdata->dest_info.name.slen) {
-            pj_strdup(tdata->pool, &tdata->dest_info.name, 
+            PJ_LOG(4,( THIS_FILE,  "[FOR-TLS] set new value pjsip_endpt_send_response"));
+            pj_strdup(tdata->pool, &tdata->dest_info.name,
                       &res_addr->dst_host.addr.host);
         }
 
-        pjsip_endpt_resolve(endpt, tdata->pool, &res_addr->dst_host, 
+//        if (tdata) {
+//            char * remote_name = tdata->dest_info.name.ptr;
+//            PJ_LOG(4,(THIS_FILE, remote_name, "[FOR-TLS] remote value in pjsip_endpt_send_response"));
+//        } else {
+//            PJ_LOG(4,( THIS_FILE,  "[FOR-TLS] no remote value"));
+//        }
+
+        pjsip_endpt_resolve(endpt, tdata->pool, &res_addr->dst_host,
                             send_state, &send_response_resolver_cb);
         return PJ_SUCCESS;
     }

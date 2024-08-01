@@ -2482,6 +2482,7 @@ PJ_DEF(pj_status_t) pjsip_tpmgr_acquire_transport2(pjsip_tpmgr *mgr,
                              * destination host matches the transport's
                              * remote host.
                              */
+
                             if (pj_stricmp(&tdata->dest_info.name,
                                            &tp_iter->tp->remote_name.host))
                             {
@@ -2633,7 +2634,7 @@ PJ_DEF(pj_status_t) pjsip_tpmgr_acquire_transport2(pjsip_tpmgr *mgr,
     TRACE_((THIS_FILE, "Creating new transport from factory"));
 
     /* Request factory to create transport. */
-    if (factory->create_transport2) {
+    if (factory->create_transport2) { // !!!!! kekekekek
         status = factory->create_transport2(factory, mgr, mgr->endpt,
                                             (const pj_sockaddr*) remote,
                                             addr_len, tdata, tp);
