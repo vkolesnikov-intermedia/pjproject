@@ -225,6 +225,10 @@ PJ_DEF(pj_status_t) pjsip_regc_get_info( pjsip_regc *regc,
     info->interval = regc->expires;
     info->transport = regc->has_tsx? regc->info_transport :
                                      regc->last_transport;
+    PJ_LOG(4, (THIS_FILE, "Get regc info: URI(%.*s) has_tsx=%d",
+                           (int)regc->from_uri.slen, regc->from_uri.ptr,
+                           regc->has_tsx));
+    PJ_LOG(4, (THIS_FILE, "Get regc info: tp=%s",info->transport->obj_name));
     
     if (regc->has_tsx)
         info->next_reg = 0;
@@ -486,6 +490,8 @@ PJ_DEF(pj_status_t) pjsip_regc_set_transport( pjsip_regc *regc,
 PJ_DEF(pj_status_t) pjsip_regc_release_transport(pjsip_regc *regc)
 {
     PJ_ASSERT_RETURN(regc, PJ_EINVAL);
+    PJ_LOG(4, (THIS_FILE, "Releasing regc tp:%s",
+        regc->last_transport? regc->last_transport->obj_name:"null"));
     if (regc->last_transport) {
         pjsip_transport_dec_ref(regc->last_transport);
         regc->last_transport = NULL;
